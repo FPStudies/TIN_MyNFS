@@ -7,6 +7,7 @@ OUT_NAME = Program
 
 SPDLOG_LIB = external/spdlog/build/libspdlog.a
 SPDLOG_INCLUDE = -Iexternal/spdlog/include
+INCLUDE = -Iinclude
 
 CATCH2_SOURCE = external/catch2/catch_amalgamated.cpp 
 CATCH2_INCLUDE = -Iexternal
@@ -18,7 +19,7 @@ BINARIES_TEST = $(wildcard tests/*.o)
 all: compileProgram compileTests
  
 compileProgram: $(CPP_FILES)
-	g++ -o $(OUT_NAME) $(CPP_FILES) $(SPDLOG_LIB) $(SPDLOG_INCLUDE)
+	g++ -o $(OUT_NAME) $(CPP_FILES) $(INCLUDE) $(SPDLOG_LIB) $(SPDLOG_INCLUDE)
 
 downloadLogs: 
 	cd external && \
@@ -27,7 +28,7 @@ downloadLogs:
 	cmake .. && make -j
 
 compileTests:
-	g++ -o $(OUT_TEST_NAME) $(CPP_TEST_FILES) $(CATCH2_SOURCE) $(CATCH2_INCLUDE)
+	g++ -o $(OUT_TEST_NAME) $(CPP_TEST_FILES) $(INCLUDE) $(CATCH2_SOURCE) $(CATCH2_INCLUDE)
 
 clean: cleanProg cleaTests
 
