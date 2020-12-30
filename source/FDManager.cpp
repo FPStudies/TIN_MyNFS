@@ -11,7 +11,6 @@ FDManager::Container::Container(FileDescriptor&& fileDescriptor)
 
 bool FDManager::add(FileDescriptor&& fileDescriptor){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexById>();
     if(index.find(fileDescriptor.getID()) != index.end()) {
         logEndCustom("Already exist");
@@ -26,7 +25,6 @@ bool FDManager::add(FileDescriptor&& fileDescriptor){
 
 bool FDManager::remove(int fd, int pid){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexById>();
     auto found = index.find(fd);
     if(found == index.end() || (*found)->fd.getPID() != pid) {
@@ -38,9 +36,21 @@ bool FDManager::remove(int fd, int pid){
     return true;
 }
 
+bool FDManager::remove(int fd){
+    logStart();
+    auto& index = fd_.get<IndexById>();
+    auto found = index.find(fd);
+    if(found == index.end()) {
+        logEndCustom("Does not exist");
+        return false;
+    }
+    index.erase(found);
+    logEndCustom("Removed");
+    return true;
+}
+
 bool FDManager::exist(int fd){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexById>();
     auto tmp = index.find(fd);
     if(tmp != index.end()) {
@@ -53,7 +63,6 @@ bool FDManager::exist(int fd){
 
 bool FDManager::exist(int fd, int pid){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexById>();
     auto tmp = index.find(fd);
     if(tmp != index.end() && (*tmp)->fd.getPID() == pid) {
@@ -66,23 +75,9 @@ bool FDManager::exist(int fd, int pid){
 
 bool FDManager::exist(const std::string& path){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexByPath>();
-    auto tmp = index.find(path);
-    if(tmp != index.end()) {
-        logEndCustom("Does exist");
-        return true;
-    }
-    logEndCustom("Does not exist");
-    return false;
-}
-
-bool FDManager::exist(const std::string& path, int pid){
-    logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
-    auto& index = fd_.get<IndexByPath>();
-    auto tmp = index.find(path);
-    if(tmp != index.end() && (*tmp)->fd.getPID() == pid) {
+    auto tmp = index.equal_range(path);
+    if(tmp.first != tmp.second) {
         logEndCustom("Does exist");
         return true;
     }
@@ -92,7 +87,6 @@ bool FDManager::exist(const std::string& path, int pid){
 
 FileDescriptor& FDManager::get(int fd, int pid){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     auto& index = fd_.get<IndexById>();
     auto& tmp = *index.find(fd);
     if(tmp->fd.getPID() != pid) {
@@ -103,11 +97,17 @@ FileDescriptor& FDManager::get(int fd, int pid){
     return tmp->fd;
 }
 
-FileDescriptor& FDManager::get(const std::string& path){
+FDManager::FDVecor FDManager::get(const std::string& path){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
+    FDVecor ret;
     auto& index = fd_.get<IndexByPath>();
-    auto& tmp = *index.find(path);
-    logEndCustom(static_cast<std::string>(tmp->fd));
-    return tmp->fd;
+    auto tmp = index.equal_range(path);
+
+    for(auto& it : boost::make_iterator_range(tmp)){
+        ret.push_back(boost::reference_wrapper<FileDescriptor>(it->fd));
+        logCustom(static_cast<std::string>(it->fd));
+    }
+
+    logEndCustom("Returned vector.");
+    return ret;
 }

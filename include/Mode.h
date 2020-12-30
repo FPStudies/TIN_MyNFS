@@ -5,6 +5,8 @@
  * 
  */
 
+#include <iostream>
+
 struct Mode{
 
     enum class Operation{

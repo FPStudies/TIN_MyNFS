@@ -16,8 +16,10 @@ bool IDGen::isIdBad(ID id) const{
 }
 
 IDGen::ID IDGen::get(){
+    logStart();
     std::lock_guard<std::mutex> guard(monitor_);
     ID ret = nextPossibleValue_;
+    values_.emplace(ret);
 
     bool notFound = true;
     while(notFound){
@@ -29,21 +31,34 @@ IDGen::ID IDGen::get(){
             notFound = false;
         }
     }
+    logEndCustom("Get id: " + std::to_string(ret));
     return ret;
 }
 
 bool IDGen::exist(const ID& id) const{
+    logStart();
     if(isIdBad(id)) return false;
 
     std::lock_guard<std::mutex> guard(monitor_);
-    if(values_.find(id) != values_.end())
+    if(values_.find(id) != values_.end()){
+        logEndCustom("Exist id: " + std::to_string(id));
         return true;
+    }
+    logEndCustom("Does not exist id: "  + std::to_string(id));
+    return false;
 }
 
 bool IDGen::dispose(const ID& id){
+    logStart();
     if(isIdBad(id)) return false;
 
     std::lock_guard<std::mutex> guard(monitor_);
-    values_.erase(values_.find(id));
+    auto it = values_.find(id);
+    if(it == values_.end()){
+        logEndCustom("Does not exist id: " + std::to_string(id));
+        return false;
+    }
+    values_.erase(it);
+    logEndCustom("Was erased id: " + std::to_string(id));
     return true;
 }

@@ -4,6 +4,7 @@
 CPP_FILES = $(wildcard source/*.cpp)
 BINARIES = $(wildcard source/*.o)
 OUT_NAME = Program
+FLAGS = -Wall -g
 
 SPDLOG_LIB = external/spdlog/build/libspdlog.a
 SPDLOG_INCLUDE = -Iexternal/spdlog/include
@@ -19,7 +20,7 @@ BINARIES_TEST = $(wildcard tests/*.o)
 all: compileProgram compileTests
  
 compileProgram: $(CPP_FILES)
-	g++ -o $(OUT_NAME) $(CPP_FILES) $(INCLUDE) $(SPDLOG_LIB) $(SPDLOG_INCLUDE)
+	g++ $(FLAGS) -o $(OUT_NAME) $(CPP_FILES) $(INCLUDE) $(SPDLOG_LIB) $(SPDLOG_INCLUDE)
 
 downloadLogs: 
 	cd external && \

@@ -12,12 +12,15 @@ int main(){
 
     FDManager manager;
     IDGen generator;
-    std::fstream file("../tests/main.cpp");
-    FileDescriptor fd(generator, 32, 0, Mode(Mode::Operation::Read, Mode::Type::File), "None", std::move(file));
-    manager.add(std::move(fd));
+    int fdOS = open("tests/main.cpp", O_RDONLY);
+    if(fdOS == -1) throw std::runtime_error("Could not open file");
+    FileDescriptor fd(generator, 32, 0, Mode(Mode::Operation::Read, Mode::Type::File), "None", fdOS);
+    /*manager.add(std::move(fd));
 
     API api;
-    api.mynfs_lseek(fd.getID(), 1, 6, manager, 32);
+    api.mynfs_lseek(fd.getID(), 1, 6, manager, 32);*/
+
+    close(fdOS);
 
     std::cout << "Hello world" << std::endl;
 

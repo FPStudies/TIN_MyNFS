@@ -7,11 +7,11 @@
  */
 
 #include <string>
-
+#include "spdlog/spdlog.h"
 
 #define logStart() \
     do {\
-        spdlog::debug(std::string(__PRETTY_FUNCTION__) + "\tStarted operation ."); \
+        spdlog::debug(std::string(__PRETTY_FUNCTION__) + "\tStarted operation."); \
     }while(false)
 
 #define logCustom(comment) \
@@ -38,6 +38,11 @@
     do {\
         logCustom(comment); \
         logEnd(); \
+    }while(false)
+
+#define locConstructorCreation(thisPtr) \
+    do {\
+        spdlog::debug(std::string(__PRETTY_FUNCTION__) + "\tCreated object: " + static_cast<std::string>(*thisPtr)); \
     }while(false)
 
 #endif

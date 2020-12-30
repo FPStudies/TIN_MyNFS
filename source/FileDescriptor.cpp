@@ -11,13 +11,23 @@ FileDescriptor::FileDescriptor(
     const OffsetType& initialOffset, 
     const ModeType& mode, 
     const std::string& path, 
-    std::fstream&& fileHandler
+    //std::fstream&& fileHandler
+    int fileDescriptor
 )
-: fdID_(generator.get()), pid_(pid), mode_(mode), fileHandler_(std::move(fileHandler)), path_(path), generator_(generator)
+: fdID_(generator.get()), pid_(pid), fdOS_(fileDescriptor), mode_(mode), path_(path), generator_(generator)
 {
-    fileHandler_.seekg(initialOffset);
-    spdlog::debug("New FileDescriptor created:\nfdID:\t" + std::to_string(fdID_) + "\nPID:\t" + 
-        std::to_string(pid_) + "\nMode:\t" + static_cast<std::string>(mode_) + "\nPath:\t" + path_);
+    lseek(fdOS_, initialOffset, SEEK_SET);
+    locConstructorCreation(this);
+    /*spdlog::debug("New FileDescriptor created:\nfdID:\t" + std::to_string(fdID_) + "\nPID:\t" + 
+        std::to_string(pid_) + "\nMode:\t" + static_cast<std::string>(mode_) + "\nPath:\t" + path_);*/
+}
+
+FileDescriptor::operator std::string() const{
+    return std::string("\nInner file descriptor id:\t" + std::to_string(fdID_) + 
+        "\nOS file descriptor:\t" + std::to_string(fdOS_) +
+        "\nPID:\t" + std::to_string(pid_) +
+        "\nMode:\t" + static_cast<std::string>(mode_) +
+        "\nPath:\t" + path_);
 }
 
 FileDescriptor::~FileDescriptor(){
@@ -35,17 +45,17 @@ const int& FileDescriptor::getIDConst() const{
 FileDescriptor::PIDType FileDescriptor::getPID() const{
     return pid_;
 }
-
+/*
 FileDescriptor::OffsetType FileDescriptor::getOffset(){
     return fileHandler_.tellg();
 }
 
-FileDescriptor::ModeType FileDescriptor::getMode() const{
-    return mode_;
-}
-
 std::fstream& FileDescriptor::getFileHandler(){
     return fileHandler_;
+}
+*/
+FileDescriptor::ModeType FileDescriptor::getMode() const{
+    return mode_;
 }
 
 std::string FileDescriptor::getPath() const{
@@ -54,4 +64,17 @@ std::string FileDescriptor::getPath() const{
 
 const std::string& FileDescriptor::getPathConst() const{
     return path_;
+}
+
+void FileDescriptor::setfd(int fd){
+    fdOS_ = fd;
+}
+
+int FileDescriptor::getfd() const{
+    return fdOS_;
+}
+
+bool FileDescriptor::isFile() const{
+    if(mode_.type == Mode::Type::File) return true;
+    return false;
 }

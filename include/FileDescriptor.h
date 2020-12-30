@@ -5,10 +5,12 @@
  * 
  */
 
-#include <fstream>
+#include <sys/types.h>
+#include <unistd.h>
 #include "Mode.h"
 #include "IDGen.h"
 #include "spdlog/spdlog.h"
+#include "LogUtils.h"
 
 /**
  * @brief Proxy do systemowego deskryptora plików.
@@ -21,9 +23,10 @@ class FileDescriptor{
 
     int fdID_;
     PIDType pid_;
+    int fdOS_;
     //OffsetType offset_;
     ModeType mode_;
-    std::fstream fileHandler_; // posiada offset
+    //std::fstream fileHandler_; // posiada offset
     std::string path_;
     IDGen& generator_;
 
@@ -35,7 +38,8 @@ public:
         const OffsetType& initialOffset, 
         const ModeType& mode, 
         const std::string& path, 
-        std::fstream&& fileHandler
+        //std::fstream&& fileHandler
+        int fileDescriptor
     );
 
     ~FileDescriptor();
@@ -46,20 +50,14 @@ public:
     PIDType getPID() const;
     OffsetType getOffset();
     ModeType getMode() const;
-    std::fstream& getFileHandler();
+    //std::fstream& getFileHandler();
     std::string getPath() const;
     const std::string& getPathConst() const;
+    void setfd(int fd);
+    int getfd() const;
+    bool isFile() const;
 
-    operator std::string() const{
-        return std::string("\nFile descriptor id:\t" + std::to_string(fdID_) + 
-            "\nPID:\t" + std::to_string(pid_) +
-            "\nMode:\t" + static_cast<std::string>(mode_) +
-            "\nPath:\t" + path_);
-    }
-
-    //bool setOffset(const OffsetType& offset);
-    //void setMode(const ModeType& mode);
-
+    operator std::string() const;
 
 
 };

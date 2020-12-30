@@ -7,12 +7,13 @@
 
 #include <mutex>
 #include <set>
-
+#include "LogUtils.h"
 /**
  * @brief Klasa służy go generacji nowych nieujemnych wartości identyfikatorów. Zaimplementowana
  * jako monitor.
  */
 class IDGen{
+public:
     using ID = int;
     std::set<ID> values_;
     ID nextPossibleValue_;

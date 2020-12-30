@@ -1,6 +1,8 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
+#include <string>
+
 class Error{
 
 public:
@@ -58,6 +60,65 @@ public:
 
     static int toInt(Type error){
         return static_cast<int>(error);
+    }
+
+    static std::string toString(Type type){
+        switch(type){
+            case Type::NONE:
+                return "NONE";
+            case Type::einval:
+                return "einval";
+            case Type::enotdir:
+                return "enotdir";
+            case Type::etran:
+                return "etran";
+            case Type::econn:
+                return "econn";
+            case Type::emfile:
+                return "emfile";
+            case Type::enametoolong:
+                return "enametoolong";
+            case Type::enfile:
+                return "enfile";
+            case Type::enoent:
+                return "enoent";
+            case Type::econref:
+                return "econref";
+            case Type::encat:
+                return "encat";
+            case Type::ebadf:
+                return "ebadf";
+            case Type::eio:
+                return "eio";
+            case Type::eisdir:
+                return "eisdir";
+            case Type::eacces:
+                return "eacces";
+            case Type::eagain:
+                return "eagain";
+            case Type::efault:
+                return "efault";
+            case Type::efbig:
+                return "efbig";
+            case Type::eserv:
+                return "eserv";
+            case Type::erwsize:
+                return "erwsize";
+            case Type::enospc:
+                return "enospc";
+            case Type::epipe:
+                return "epipe";
+            case Type::edevnospc:
+                return "edevnospc";
+            case Type::etout:
+                return "etout";
+            default:
+                return "NOT IMPLEMENTED";
+        }
+    }
+
+    operator std::string(){
+        return this->toString(this->type_);
     }
 
 };
