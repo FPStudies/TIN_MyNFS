@@ -16,6 +16,8 @@ FileDescriptor::FileDescriptor(
 : fdID_(generator.get()), pid_(pid), mode_(mode), fileHandler_(std::move(fileHandler)), path_(path), generator_(generator)
 {
     fileHandler_.seekg(initialOffset);
+    spdlog::debug("New FileDescriptor created:\nfdID:\t" + std::to_string(fdID_) + "\nPID:\t" + 
+        std::to_string(pid_) + "\nMode:\t" + static_cast<std::string>(mode_) + "\nPath:\t" + path_);
 }
 
 FileDescriptor::~FileDescriptor(){

@@ -8,6 +8,7 @@
 #include <fstream>
 #include "Mode.h"
 #include "IDGen.h"
+#include "spdlog/spdlog.h"
 
 /**
  * @brief Proxy do systemowego deskryptora plików.
@@ -48,6 +49,13 @@ public:
     std::fstream& getFileHandler();
     std::string getPath() const;
     const std::string& getPathConst() const;
+
+    operator std::string() const{
+        return std::string("\nFile descriptor id:\t" + std::to_string(fdID_) + 
+            "\nPID:\t" + std::to_string(pid_) +
+            "\nMode:\t" + static_cast<std::string>(mode_) +
+            "\nPath:\t" + path_);
+    }
 
     //bool setOffset(const OffsetType& offset);
     //void setMode(const ModeType& mode);
