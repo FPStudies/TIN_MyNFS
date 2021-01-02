@@ -3,3 +3,4 @@ Program
 Test
 .vscode
 *.o
+*.a
