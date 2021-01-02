@@ -225,6 +225,7 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, int pid FDManager& manager)
 	fileStat.nfs_st_atime = (int32_t)st.st_atime; 
 	fileStat.nfs_st_mtime = (int32_t)st.st_mtime;
 	
+	logEndCustom("Pass");
 	return fileStat;
 } 
 
