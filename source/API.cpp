@@ -195,7 +195,7 @@ int API::mynfs_open(char* path, int oflag, int mode, int pid, FDManager& manager
 	return fileDes.getID();
 }
 
-struct mynfs_stat API::mynfs_fstat(int mynfs_fd, int pid FDManager& manager)
+struct mynfs_stat API::mynfs_fstat(int mynfs_fd, int pid, FDManager& manager)
 {
 
 	struct mynfs_stat fileStat = {};
