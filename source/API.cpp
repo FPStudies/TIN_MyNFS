@@ -30,19 +30,24 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
         return -1;
     }
 
-    // TODO check offset
-
     auto& fdObject = manager.get(fd);
+    if(!fdObject.isFile()){
+        error_ = Error::Type::enotfile;
+        logEndCustom(error_);
+        return -1;
+    }
+
     auto tmp = fdObject.getfd();
+    int ret = 0;
     switch(type){
         case Seek::Set:
-            lseek(tmp, offset, SEEK_SET);
+            ret = lseek(tmp, offset, SEEK_SET);
             break;
         case Seek::Cur:
-            lseek(tmp, offset, SEEK_CUR);
+            ret = lseek(tmp, offset, SEEK_CUR);
             break;
         case Seek::End:
-            lseek(tmp, offset, SEEK_END);
+            ret = lseek(tmp, offset, SEEK_END);
             break;
         default:
             error_ = Error::Type::eserv;
@@ -50,8 +55,14 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
             return -1;
     }
 
+    if(ret < 0){
+        error_ = Error::Type::eoverflow;
+        logEndCustom(error_);
+        return -1;
+    }
+
     logEndCustom("Pass");
-    return 0;
+    return ret;
 
 }
 
@@ -82,7 +93,11 @@ int API::mynfs_close(int fd, FDManager& manager){
 
 int API::mynfs_unlink(char* path, FDManager& manager){
     logStart();
-    // TODO sprawdzić długość ścieżki
+    if(!checkPathLength(path)){
+        error_ = Error::Type::enametoolong;
+            logEndCustom(error_);
+            return -1;
+    }
 
     struct stat sb;
     if(stat(path, &sb) == 0) {
@@ -223,4 +238,9 @@ int API::mynfs_closedir(int dirfd)
     error_ = Error::Type::eserv;
     logEndCustom(error_);
 	return -1;
+}
+
+bool API::checkPathLength(char* path){
+    if(strlen(path) < MAX_PATH_LEN) return true;
+    return false;
 }

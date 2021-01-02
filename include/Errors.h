@@ -12,7 +12,7 @@ public:
         enotdir = -3, // Element prefiksu ścieżki nie jest katalogiem.
         etran = -4, // Błąd przesyłania pakietów. Funkcja nie została wykonana.
         econn = -5, // Błąd połączenia. Nie można połączyć się z danym hostem pod danym portem.
-        emfile = -6, // Osiągnięta została już maksymalna liczba {OPEN_MAX} deskryptorów plików dla danego użytkownika.
+        enotfile = -6, // Podany deskryptor nie wskazuje na plik.
         enametoolong = -7, // Długość ścieżki przekroczyła 	dozwoloną wartość {PATH_MAX} lub nazwa elementu ścieżki przekroczyła długość {NAME_MAX}.
         enfile = -8, // Została już osiągnięta maksymalna liczba otwartych plików/katalogów w systemie.
         enoent = -9, // Wskazany przez ścieżkę plik/katalog nie istnieje bądź ścieżka jest łańcuchem pustym.
@@ -29,6 +29,7 @@ public:
         erwsize = -20, // Przekroczenie limit odczytu/zapisu MY_RW_SIZE_MAX.
         enospc = -21, // Urządzenie powiązane z deskryptorem pliku mynfs_fd nie posiada miejsca na nowe dane.
         epipe = -22, // Deskryptor powiązany jest z potokiem lub gniazdem, którego odczyt jest zamknięty.
+        eoverflow = -23, //Zwracana wartość przesunięcia nie może być reprezentowana jako typ off_t.
         edevnospc = -24, // Odmowa przyjęcia żądanej ilości bajtów
         etout = -25 // Nastąpił timeout połączenia. Podana operacja nie może zostać wykonana.
     };

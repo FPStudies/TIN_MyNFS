@@ -9,6 +9,7 @@
 #include "Errors.h"
 
 struct API{
+    static const unsigned int MAX_PATH_LEN = 4096;
 
     enum class Seek{
         ERROR = 0,
@@ -29,6 +30,15 @@ struct API{
 
 private:
     Error error_;
+
+    /**
+     * @brief Sprawdza czy długość ścieżki mieści się w limicie.
+     * 
+     * @param path 
+     * @return true - Mieści się w limicie.
+     * @return false - Nie mieści się w limicie.
+     */
+    bool checkPathLength(char* path);
 };
 
 #endif
