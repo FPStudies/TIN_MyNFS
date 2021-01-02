@@ -97,9 +97,17 @@ FileDescriptor& FDManager::get(int fd, int pid){
     return tmp->fd;
 }
 
-FDManager::FDVecor FDManager::get(const std::string& path){
+FileDescriptor& FDManager::get(int fd){
     logStart();
-    FDVecor ret;
+    auto& index = fd_.get<IndexById>();
+    auto& tmp = *index.find(fd);
+    logEndCustom(static_cast<std::string>(tmp->fd));
+    return tmp->fd;
+}
+
+FDManager::FDVector FDManager::get(const std::string& path){
+    logStart();
+    FDVector ret;
     auto& index = fd_.get<IndexByPath>();
     auto tmp = index.equal_range(path);
 

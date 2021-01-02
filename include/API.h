@@ -18,8 +18,8 @@ struct API{
     };
     static Seek toSeek(int error);
 
-    int mynfs_lseek(int fd, int whence, int offset, FDManager& manager, int pid);
-    int mynfs_close(int fd, FDManager& manager, int pid);
+    int mynfs_lseek(int fd, int whence, int offset, FDManager& manager);
+    int mynfs_close(int fd, FDManager& manager);
     int mynfs_unlink(char* path, FDManager& manager);
 
     int mynsf_opendir(char* host, char* path);

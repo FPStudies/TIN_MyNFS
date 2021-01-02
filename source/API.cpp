@@ -16,9 +16,9 @@ API::Seek API::toSeek(int error){
     }
 }
 
-int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager, int pid){
+int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
     logStart();
-    if(!manager.exist(fd, pid)) {
+    if(!manager.exist(fd)) {
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         return -1;
@@ -32,7 +32,7 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager, int pid
 
     // TODO check offset
 
-    auto& fdObject = manager.get(fd, pid);
+    auto& fdObject = manager.get(fd);
     auto tmp = fdObject.getfd();
     switch(type){
         case Seek::Set:
@@ -55,15 +55,15 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager, int pid
 
 }
 
-int API::mynfs_close(int fd, FDManager& manager, int pid){
+int API::mynfs_close(int fd, FDManager& manager){
     logStart();
-    if(!manager.exist(fd, pid)) {
+    if(!manager.exist(fd)) {
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         return -1;
     }
 
-    auto& fdObject = manager.get(fd, pid);
+    auto& fdObject = manager.get(fd);
     auto fdOS = fdObject.getfd();
     if(close(fdOS)) {
         error_ = Error::Type::eserv;
@@ -71,7 +71,7 @@ int API::mynfs_close(int fd, FDManager& manager, int pid){
         return -1;
     }
 
-    if(!manager.remove(fd, pid)) {
+    if(!manager.remove(fd)) {
         logEndCustom("Could not remove a file. Inner error.");
         throw std::runtime_error("Could not remove a file."); // poważny błąd w kodzie
     }

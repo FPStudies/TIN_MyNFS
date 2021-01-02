@@ -40,7 +40,7 @@ class FDManager{
             >
         >
     >;
-    using FDVecor = std::vector<boost::reference_wrapper<FileDescriptor>>;
+    using FDVector = std::vector<boost::reference_wrapper<FileDescriptor>>;
     MultiMap fd_;
 
 public:
@@ -57,7 +57,8 @@ public:
     bool exist(int fd, int pid);
     bool exist(const std::string& path);
     FileDescriptor& get(int fd, int pid);
-    FDVecor get(const std::string& path);
+    FileDescriptor&get(int fd);
+    FDVector get(const std::string& path);
 
 
 };
