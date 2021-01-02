@@ -153,7 +153,7 @@ int API::mynsf_opendir(char* host, char* path)
 	// więc zostawiłem zgodnie z dokumentacją
 
     logEndCustom("Going to other function.");
-	return mynfs_open(host, path, O_DIRECTORY, O_RDONLY);
+	return 0;//mynfs_open(host, path, O_DIRECTORY, O_RDONLY);
 	// Proponuje jednak otworzyć tutaj od razu DIR *  przez funkcje fdopendir i zapisać 
 }
 
@@ -197,7 +197,7 @@ char* API::mynsf_readdir(int dirfd)
 	{
 		// pusty katalog
         logEndCustom("Pass. Empty string.");
-		return "";
+		return NULL;
 	}
 
 	str = str.substr(0, str.size() - 1);
