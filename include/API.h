@@ -7,6 +7,9 @@
 
 #include "FDManager.h"
 #include "Errors.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 struct API{
     static const unsigned int MAX_PATH_LEN = 4096;

@@ -6,6 +6,7 @@
  */
 
 #include <set>
+#include <stdexcept>
 #include "LogUtils.h"
 /**
  * @brief Klasa służy go generacji nowych nieujemnych wartości identyfikatorów. Zaimplementowana

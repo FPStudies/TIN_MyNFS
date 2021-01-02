@@ -10,8 +10,8 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/range.hpp>
+#include <vector>
 #include "FileDescriptor.h"
-#include "spdlog/spdlog.h"
 #include "LogUtils.h"
 
 class FDManager{

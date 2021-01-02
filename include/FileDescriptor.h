@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include "Mode.h"
 #include "IDGen.h"
-#include "spdlog/spdlog.h"
 #include "LogUtils.h"
 
 /**
