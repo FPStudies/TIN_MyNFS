@@ -1,4 +1,4 @@
-.PHONY: all clean cleanProg cleaTests
+.PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs
 
 
 CPP_FILES = $(wildcard source/*.cpp)
@@ -19,10 +19,7 @@ BINARIES_TEST = $(wildcard tests/*.o)
 
 DEFINE_LOGS = -DENABLE_LOGS
 
-all: compileProgram compileTests
- 
-compileProgram: $(CPP_FILES)
-	g++ $(FLAGS) $(DEFINE_LOGS) -o $(OUT_NAME) $(CPP_FILES) $(INCLUDE) $(SPDLOG_LIB) $(SPDLOG_INCLUDE)
+all: compile
 
 downloadLogs: 
 	cd external && \
@@ -30,13 +27,32 @@ downloadLogs:
 	cd spdlog && mkdir build && cd build && \
 	cmake .. && make -j
 
-compileTests:
-	g++ -o $(OUT_TEST_NAME) $(DEFINE_LOGS) $(CPP_TEST_FILES) $(INCLUDE) $(CATCH2_SOURCE) $(CATCH2_INCLUDE)
+library:
+	cd source && $(MAKE) library DEFINE_LOGS=-DENABLE_LOGS
 
-clean: cleanProg cleaTests
+libraryNoLogs:
+	cd source && $(MAKE) library
+
+compile: compileProgram compileTest
+
+compileNoLogs: compileProgramNoLogs compileTestNoLogs
+
+compileProgramNoLogs:
+	cd source && $(MAKE) compile
+
+compileTestNoLogs:
+	cd tests && $(MAKE) compile
+
+compileProgram:
+	cd source && $(MAKE) compile DEFINE_LOGS=-DENABLE_LOGS
+
+compileTest:
+	cd tests && $(MAKE) compile DEFINE_LOGS=-DENABLE_LOGS
+
+clean: cleanProg cleanTests
 
 cleanProg:
-	rm $(BINARIES) $(OUT_NAME)
+	cd source && $(MAKE) clean
 
-cleaTests:
-	rm $(OUT_TEST_NAME) $(BINARIES_TEST)
+cleanTests:
+	cd tests && $(MAKE) clean

@@ -11,4 +11,5 @@ Pobranie biblioteki logowania:
     make downloadLogs
 
 Kompilacja:
-    make
+    make compile
+    make compileNoLogs

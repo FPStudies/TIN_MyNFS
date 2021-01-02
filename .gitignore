@@ -2,3 +2,4 @@ external/spdlog
 Program
 Test
 .vscode
+*.o
