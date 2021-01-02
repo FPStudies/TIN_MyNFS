@@ -22,6 +22,11 @@ struct API{
     int mynfs_close(int fd, FDManager& manager, int pid);
     int mynfs_unlink(char* path, FDManager& manager);
 
+    int mynsf_opendir(char* host, char* path);
+    char* mynsf_readdir(int dirfd);
+    int mynfs_closedir(int dirfd);
+
+
 private:
     Error error_;
 };
