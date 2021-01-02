@@ -5,7 +5,6 @@
  * 
  */
 
-#include <mutex>
 #include <set>
 #include "LogUtils.h"
 /**
@@ -17,7 +16,6 @@ public:
     using ID = int;
     std::set<ID> values_;
     ID nextPossibleValue_;
-    mutable std::mutex monitor_;
 
     bool isIdBad(ID id) const;
 

@@ -6,7 +6,7 @@
 #include "IDGen.h"
 
 IDGen::IDGen(const ID& startValue)
-: values_(), nextPossibleValue_(startValue > 0 ? startValue : throw std::runtime_error("Wrong start value in IDGen")), monitor_()
+: values_(), nextPossibleValue_(startValue > 0 ? startValue : throw std::runtime_error("Wrong start value in IDGen"))
 {}
 
 bool IDGen::isIdBad(ID id) const{
@@ -17,7 +17,6 @@ bool IDGen::isIdBad(ID id) const{
 
 IDGen::ID IDGen::get(){
     logStart();
-    std::lock_guard<std::mutex> guard(monitor_);
     ID ret = nextPossibleValue_;
     values_.emplace(ret);
 
@@ -39,7 +38,6 @@ bool IDGen::exist(const ID& id) const{
     logStart();
     if(isIdBad(id)) return false;
 
-    std::lock_guard<std::mutex> guard(monitor_);
     if(values_.find(id) != values_.end()){
         logEndCustom("Exist id: " + std::to_string(id));
         return true;
@@ -52,7 +50,6 @@ bool IDGen::dispose(const ID& id){
     logStart();
     if(isIdBad(id)) return false;
 
-    std::lock_guard<std::mutex> guard(monitor_);
     auto it = values_.find(id);
     if(it == values_.end()){
         logEndCustom("Does not exist id: " + std::to_string(id));
