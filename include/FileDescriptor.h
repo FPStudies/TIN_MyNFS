@@ -17,12 +17,10 @@
  * 
  */
 class FileDescriptor{
-    using PIDType = int;
     using OffsetType = int;
     using ModeType = Mode;
 
     int fdID_;
-    PIDType pid_;
     int fdOS_;
     //OffsetType offset_;
     ModeType mode_;
@@ -34,7 +32,6 @@ public:
 
     FileDescriptor(
         IDGen& generator, 
-        const PIDType& pid, 
         const OffsetType& initialOffset, 
         const ModeType& mode, 
         const std::string& path, 
@@ -50,10 +47,7 @@ public:
 
     int getID() const;
     const int& getIDConst() const;
-    PIDType getPID() const;
-    //OffsetType getOffset();
     ModeType getMode() const;
-    //std::fstream& getFileHandler();
     std::string getPath() const;
     const std::string& getPathConst() const;
     void setfd(int fd);

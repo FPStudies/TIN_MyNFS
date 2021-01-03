@@ -139,7 +139,7 @@ int API::mynfs_unlink(char* path, FDManager& manager){
 // Wiec wystarczy, że podepniesz pod ten swój FD co tam pisałeś
 
 
-int API::mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode, int pid)
+int API::mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode)
 {
     logStart();
 	// Tu po prostu wystartczy wywołać tego zwykłego opena i otworzyć katalog
@@ -147,7 +147,7 @@ int API::mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, i
 	// więc zostawiłem zgodnie z dokumentacją - tu miki i mowie, ze dla serwera troche inaczej niz w dokumentacji te parametry wygladaja, ale poprawilem
 	
     logEndCustom("Going to other function.");
-	return mynfs_open(path, O_RDONLY, manager, gen, mode, pid);
+	return mynfs_open(path, O_RDONLY, manager, gen, mode);
 	// Proponuje jednak otworzyć tutaj od razu DIR *  przez funkcje fdopendir i zapisać 
 	
 	// ~mikolaj - tutaj inaczej zrozumialem parametry naszej metody - flags jako tryb otwarcia a mode jako uprawnienia ( tak jak to jest w linuxowym open, bo mielismy sie wzorowac ), 
@@ -236,7 +236,7 @@ int API::mynfs_closedir(int dirfd)
 	return -1;
 }
 
-int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int mode, int pid)
+int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int mode)
 {
 	logStart();
 	
@@ -306,7 +306,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	}
 	
 	Mode md(op, tp);
-	FileDescriptor fileDes(gen, pid, 0, md, path, fd);
+	FileDescriptor fileDes(gen, 0, md, path, fd);
 	logEndCustom("Pass");
 	return fileDes.getID();
 }
@@ -452,6 +452,25 @@ int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
         logEndCustom(error_);
         return -1;
     }
+    //written less than expected, retrying
+    if (bytes_written < len)
+    {
+        int new_len = len-bytes_written;
+        char* new_buf = new char [new_len];
+        memcpy(new_buf, buf + bytes_written, new_len);
+        int new_bytes_written = 0;
+
+        //failure sets it's own error_ value and logs proper error
+        if ((new_bytes_written = mynfs_write(sys_fd, new_buf, new_len, manager)) == -1) 
+        {
+        delete[] new_buf;
+        return -1;
+        }
+
+        delete[] new_buf;
+        bytes_written += new_bytes_written;
+    }
+    
 
     logEndCustom("File written into.");
     return bytes_written;
