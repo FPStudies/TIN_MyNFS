@@ -127,6 +127,13 @@ public:
         return this->toString(this->type_);
     }
 
+    //TODO: standard UNIX value, to be changed when agreed on
+    /**
+     * @brief Max number of bytes allowed in one read/write operation
+     * 
+     */
+    static const int MY_RW_SIZE_MAX = 2147479552;
+
 };
 
 

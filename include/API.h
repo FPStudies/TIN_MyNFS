@@ -7,7 +7,10 @@
  */
 
 #include <stdint.h>
-
+#include <iostream>
+#include <sys/types.h>
+#include <dirent.h>
+#include <cstring>
 #include "FDManager.h"
 #include "Errors.h"
 
@@ -44,6 +47,27 @@ struct API{
 	int mynfs_open(char* path, int oflag,  FDManager& manager, IDGen& gen, int mode = 0660, int pid = 0);
 	mynfs_stat mynfs_fstat(int mynfs_fd, FDManager& manager);
 
+    /**
+     * @brief Reads specified number of bytes from file to buffer
+     * 
+     * @param mynfs_fd descriptor of the file from which to read
+     * @param buf buffer to save read data
+     * @param len maximum number of bytes to read
+     * @param manager FileDescriptor manager
+     * @return int on success - number of bytes read / on failure - value -1
+     */
+    int mynfs_read(int mynfs_fd, char* buf, int len, FDManager& manager);
+
+    /**
+     * @brief Writes specified number of bytes from buffer to file
+     * 
+     * @param mynfs_fd descriptor of the file to write into
+     * @param buf buffer with the data to write (length of at least the value of len)
+     * @param len maximum number of bytes to write
+     * @param manager FileDescriptor manager
+     * @return int on success - number of bytes written / on failure - value -1
+     */
+    int mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager);
 
 private:
     Error error_;

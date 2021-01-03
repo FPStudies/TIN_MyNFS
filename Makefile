@@ -1,4 +1,4 @@
-.PHONY: all clean cleanProg cleaTests
+.PHONY: all clean cleanProg cleanTests
 
 
 CPP_FILES = $(wildcard source/*.cpp)
@@ -31,10 +31,10 @@ downloadLogs:
 compileTests:
 	g++ -o $(OUT_TEST_NAME) $(CPP_TEST_FILES) $(INCLUDE) $(CATCH2_SOURCE) $(CATCH2_INCLUDE)
 
-clean: cleanProg cleaTests
+clean: cleanProg cleanTests
 
 cleanProg:
 	rm $(BINARIES) $(OUT_NAME)
 
-cleaTests:
+cleanTests:
 	rm $(OUT_TEST_NAME) $(BINARIES_TEST)

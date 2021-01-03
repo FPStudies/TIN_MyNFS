@@ -135,12 +135,6 @@ int API::mynfs_unlink(char* path, FDManager& manager){
     return 0;
 }
 
-
-#include <iostream>
-#include <sys/types.h>
-#include <dirent.h>
-#include <cstring>
-
 // Te funkcje działają dobrze na fileDesrciptor systemowym z funkcji open zwykłej bo sprawdzałem różne możliwości
 // Wiec wystarczy, że podepniesz pod ten swój FD co tam pisałeś
 
@@ -350,6 +344,118 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
 	logEndCustom("Pass");
 	return fileStat;
 } 
+
+int API::mynfs_read(int mynfs_fd, char* buf, int len, FDManager& manager)
+{
+    logStart();
+
+    //TODO: decide what to check on client's side
+    
+    //check for errors
+    if(len <= 0 )
+    {
+        logEndCustom("Commanded not to read anything.");
+        return 0;
+    }
+    if (len > Error::MY_RW_SIZE_MAX)
+    {
+        error_ = Error::Type::erwsize;
+        logEndCustom(error_);
+        return -1;
+    }
+    if(!manager.exist(mynfs_fd)) {
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    FileDescriptor& obj_fd = manager.get(mynfs_fd);
+
+    if (!obj_fd.isFile())
+    {
+        error_ = Error::Type::eisdir;
+        logEndCustom(error_);
+        return -1;
+    }
+    if (!obj_fd.isReadable())
+    {
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    //map local mynfs_fd to file
+    int sys_fd = obj_fd.getfd();
+
+    int bytes_read = 0;
+
+    //read data to buffer
+    if ((bytes_read = read(sys_fd, buf, len)) == -1) 
+    {
+        error_ = Error::Type::eserv;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    logEndCustom("File read.");
+    return bytes_read;
+}
+
+int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
+{
+    logStart();
+
+    //TODO: decide what to check on client's side
+
+    //check for errors
+    if(len <= 0 )
+    {
+        logEndCustom("Commanded not to write anything.");
+        return 0;
+    }
+    if (len > Error::MY_RW_SIZE_MAX)
+    {
+        error_ = Error::Type::erwsize;
+        logEndCustom(error_);
+        return -1;
+    }
+    if(!manager.exist(mynfs_fd)) {
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    FileDescriptor& obj_fd = manager.get(mynfs_fd);
+
+    if (!obj_fd.isFile())
+    {
+        error_ = Error::Type::eisdir;
+        logEndCustom(error_);
+        return -1;
+    }
+    if (!obj_fd.isWriteable())
+    {
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    //map local mynfs_fd to file
+    int sys_fd = obj_fd.getfd();
+
+    int bytes_written = 0;
+
+    //read data to buffer
+    if ((bytes_written = write(sys_fd, buf, len)) == -1) 
+    {
+        error_ = Error::Type::eserv;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    logEndCustom("File written into.");
+    return bytes_written;
+}
 
 bool API::checkPathLength(char* path){
     if(strlen(path) < MAX_PATH_LEN) return true;
