@@ -7,6 +7,13 @@ int main()
 	//api.mynfs_closedir(123);
 	int fd = api.mynfs_open((char*)"127.0.0.1", (char*)"Dupa", 0, 0);
 	std::cout << "Otrzymano fd: " << fd << std::endl;
-	api.mynfs_readdir(5);
+	char* ret = api.mynfs_readdir(5);
+	if(ret == NULL){
+		std::cout << "Zwrócono NULL" << std::endl;
+	}
+	else{
+		std::cout << std::string(ret) << std::endl;
+	}
+	
 	return 0;
 }

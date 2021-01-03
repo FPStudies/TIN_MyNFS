@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-CFLAGS := -Wall -Wextra -pedantic -std=c++17
+CFLAGS := -Wall -Wextra -pedantic -std=c++17 -Wno-pointer-arith
 
 clientprotocol.o: clientprotocol.hpp clientprotocol.cpp
 	g++ $(CFLAGS) -c clientprotocol.cpp -o clientprotocol.o

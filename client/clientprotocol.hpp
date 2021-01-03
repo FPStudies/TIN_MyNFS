@@ -12,8 +12,8 @@ public:
     Client(char * address);
 
     void startConnection();
-    void sendProtocol(char * buffor, std::size_t size);
-    int readProtocol(char * buffor, std::size_t size);
+    void sendProtocol(void* buffor, std::size_t size);
+    int readProtocol(void* buffor, std::size_t size);
     char * getAddress();
 private:
     static const int PORT = 21370;

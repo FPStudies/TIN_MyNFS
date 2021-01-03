@@ -5,12 +5,13 @@
 #include <unistd.h>
 #include <cstddef>
 #include <cstring>
+#include <memory>
 
 #include "datagrams.hpp"
 
-enum class ApiIDS
+enum class ApiIDS: char
 {
-    OPEN,
+    OPEN = 2,
     READ,
     WRITE,
     LSEEK,
@@ -38,82 +39,107 @@ public:
     {
         bool run = true;
         int readFlag;
-        char buffor[10];
+        int bufSize = 300;
+        void* buffor = new char[bufSize];
         int fd;
-        int id;
+        char id;
+        size_t bufPos = 0;
         std::cout << "Polaczono chuja nr "<< clientNum << ". Socket " << sock << std::endl;
         // while(run)
         // {
-            readFlag = readProtocol(buffor, sizeof(buffor));
+            readFlag = readProtocol(buffor, bufSize);
 
             if (readFlag <= 0)
                 run = false;
             else
             {
-                id = datagrams.deserializeInt(&buffor[0], 1);
+                id = datagrams.deserializeChar(buffor, bufPos);
                 switch (id)
                 {
-                    case (int)ApiIDS::CLOSEDIR:
-                        closedir(buffor);
+                    case static_cast<char>(ApiIDS::CLOSEDIR):
+                        closedir(buffor, bufPos);
                         break;
-                    case (int)ApiIDS::READDIR:
-                        readdir(buffor);
+                    case static_cast<char>(ApiIDS::READDIR):
+                        readdir(buffor, bufPos);
                         break;
                 }
             }
         // }
+        delete[] buffor;
     }
 
-    void closedir(char * buffor)
+    void closedir(void* buffor, size_t bufPos)
     {
-        int fd = datagrams.deserializeInt(&buffor[2], 2);
+        datagrams.deserializePadding(buffor, 1, bufPos);
+        short int fd = datagrams.deserializeShortInt(buffor, bufPos);
         int retVal = -1; // Dane testowe - trzeba zmienic
-        int errorID = 2;
+        char errorID = 0;
 
         // Tu wywołać zrobione funkcje 
         // retVal to zwrócona przez funkcje
         // a error sciagnac z tego errno jakoś
 
-        char retPacket[9];
-        datagrams.serializeInt(&retPacket[0], (int)ApiIDS::CLOSEDIR, 1); 
-        datagrams.serializeInt(&retPacket[1], errorID, 1);
-        retPacket[2] = 0;   // Padding zgodnie z dokumentacja
-        retPacket[3] = 0; 
-        datagrams.serializeInt(&retPacket[4], retVal, 4);
+        size_t retPacketSize = 8;
+        size_t retPos = 0;
+        size_t padding = 2;
+        void* retPacket = new char[retPacketSize];
+        datagrams.serializeChar(retPacket, static_cast<char>(ApiIDS::CLOSEDIR), retPos); 
+        datagrams.serializeChar(retPacket, errorID, retPos);
+        datagrams.serializePadding(retPacket, 2, retPos); // Padding zgodnie z dokumentacja
+        datagrams.serializeInt(retPacket, retVal, retPos);
+        if(retPos != retPacketSize) {
+            std::cout << "Błąd wielkości wysyłanego pakietu\n";
+        }
 
-        sendProtocol(&retPacket[0], sizeof(retPacket));
+        sendProtocol(retPacket, retPacketSize);
+        delete[] retPacket;
     }
 
-    void readdir(char * buffor)
+    void readdir(void* buffor, size_t bufPos)
     {
-        int fd = datagrams.deserializeInt(&buffor[2], 2);
-        int errorID = -1; // Uznałem, że -1 to nie ma błędu, bo od zera indeksujemy bledy w enum
-        int stringLength = 10;
+        datagrams.deserializePadding(buffor, 1, bufPos);
+        short int fd = datagrams.deserializeShortInt(buffor, bufPos);
+        char errorID = 0;
+        int stringLength = 11;
         char * retPacket;
+        size_t retPos = 0;
         char * testString = "DUPADUPA22";
+        size_t retPacketSize = 0;
 
-        if (errorID >= 0)
+        if (errorID < 0) // jest błąd
         {
-            retPacket = new char[4];
+            retPacketSize = 8;
+            retPacket = new char[retPacketSize];
+
         }
-        else
+        else // brak błędu
         {
-            retPacket = new char[8 + stringLength];
+            retPacketSize = 8 + stringLength;
+            retPacket = new char[retPacketSize];
         }
         
-        datagrams.serializeInt(&retPacket[0], (int)ApiIDS::READDIR, 1); 
-        datagrams.serializeInt(&retPacket[1], errorID, 1);
-        retPacket[2] = 0;   // Padding zgodnie z dokumentacja
-        retPacket[3] = 0; 
-        datagrams.serializeInt(&retPacket[4], stringLength, 4);
-
-        strcpy(retPacket+8, testString);
+        datagrams.serializeChar(retPacket, static_cast<char>(ApiIDS::READDIR), retPos); 
+        datagrams.serializeChar(retPacket, errorID, retPos);
+        datagrams.serializePadding(retPacket, 2, retPos); // Padding zgodnie z dokumentacja
         
-        sendProtocol(&retPacket[0], sizeof(retPacket));
+
+        if (errorID < 0) // jest błąd
+        {
+            datagrams.serializeInt(retPacket, 0, retPos); // długość stringa to 0
+        }
+        else // brak błędu
+        {
+            datagrams.serializeInt(retPacket, stringLength, retPos);
+            datagrams.serializeString(retPacket, testString, stringLength, retPos);
+        }
+        
+        sendProtocol(retPacket, retPacketSize);
+
+        delete[] retPacket;
     }
 
 
-    int readProtocol(char * buffor, std::size_t size)
+    int readProtocol(void* buffor, std::size_t size)
     {
         int readFlag;
         
@@ -131,7 +157,7 @@ public:
         return readFlag;
     }
 
-    int sendProtocol(char * buffor, std::size_t size)
+    int sendProtocol(void* buffor, std::size_t size)
     {
         int writeFlag;
         writeFlag = send(sock, buffor, size, 0);

@@ -4,13 +4,14 @@
 #include <cstring>
 #include <fcntl.h>
 #include <string>
+#include <limits>
 #include "clientprotocol.hpp"
 #include "datagrams.hpp"
 
 
 enum class ApiIDS
 {
-    OPEN,
+    OPEN = 2,
     READ,
     WRITE,
     LSEEK,
@@ -63,41 +64,69 @@ public:
 
     int mynfs_closedir(int dirfd)
     {
+        if(dirfd > INT16_MAX || dirfd < INT16_MIN){ // tylko 16 bitów
+            return -1;
+        }
+
         if (clients.find(dirfd) == clients.end())
         {
             // nie istnieje taki
             // ustawic jakies errno o zlym deskryptorze
             return -1;
         }
+        short int fd = static_cast<short int>(dirfd);
 
-        Client * client = clients[dirfd];
-        char clientSendMSG[4];
+        Client * client = clients[fd];
+        size_t sendSize = 4;
+        size_t sendPos = 0;
+        void* clientSendMSG = new char[sendSize];
 
-        clientSendMSG[0] = (int)ApiIDS::CLOSEDIR;
-        clientSendMSG[1] = 0; // padding
-        datagrams.serializeInt(&clientSendMSG[2], dirfd, 2);
 
-        client->sendProtocol(&clientSendMSG[0], sizeof(clientSendMSG));
+        datagrams.serializeChar(clientSendMSG, static_cast<char>(ApiIDS::CLOSEDIR), sendPos);
+        datagrams.serializePadding(clientSendMSG, 1, sendPos);
+        datagrams.serializeShortInt(clientSendMSG, fd, sendPos);
 
-        char returnBuffer[9];
-        int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
+        client->sendProtocol(clientSendMSG, sendSize);
+
+        /////////////////////////////////////////////
+
+        size_t retSize = 8;
+        size_t retPos = 0;
+        void* returnBuffer = new char[retSize];
+        int readFlag = client->readProtocol(returnBuffer, retSize);
 
         // Returned ma zwrócone wartości przez serwer
-        int retVal = datagrams.deserializeInt(&returnBuffer[4], 4);
-        int errorID = 0;
-        if (retVal == -1)
-        {
-            errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-
-            // Tu ustawić errno na errorID
+        char operID = datagrams.deserializeChar(returnBuffer, retPos);
+        char errorID = datagrams.deserializeChar(returnBuffer, retPos);
+        datagrams.deserializePadding(returnBuffer, 2, retPos);
+        int reply = datagrams.deserializeInt(returnBuffer, retPos);
+        
+        if(operID != static_cast<char>(ApiIDS::CLOSEDIR)){
+            delete[] clientSendMSG;
+            delete[] returnBuffer;
+            return -1; // nie ta operacja
         }
-        std::cout << "Zwrocono ret: " << retVal << ", error: " << errorID << std::endl;
 
-        return retVal;
+        if(errorID != 0){
+            delete[] clientSendMSG;
+            delete[] returnBuffer;
+            return -1; // błąd
+        }
+
+        std::cout << "Zwrocono ret: " << reply << ", error: " << errorID << std::endl;
+        delete[] clientSendMSG;
+        delete[] returnBuffer;
+        return reply;      
+
     };
 
     char * mynfs_readdir(int dirfd)
     {
+        if(dirfd > INT16_MAX || dirfd < INT16_MIN){ // tylko 16 bitów
+            return NULL;
+        }
+        short int fd = static_cast<short int>(dirfd);
+
         if (clients.find(dirfd) == clients.end())
         {
             // nie istnieje taki
@@ -106,37 +135,53 @@ public:
         }
 
         Client * client = clients[dirfd];
-        char clientSendMSG[4];
-        clientSendMSG[0] = (int)ApiIDS::READDIR;
-        clientSendMSG[1] = 0; // padding
-        datagrams.serializeInt(&clientSendMSG[2], dirfd, 2);
+        size_t sendSize = 8;
+        size_t sendPos = 0;
+        void* clientSendMSG = new char[sendSize];
+        datagrams.serializeChar(clientSendMSG, static_cast<char>(ApiIDS::READDIR), sendPos);
+        datagrams.serializePadding(clientSendMSG, 1, sendPos);
+        datagrams.serializeShortInt(clientSendMSG, fd, sendPos);
 
-        client->sendProtocol(&clientSendMSG[0], sizeof(clientSendMSG));
+        client->sendProtocol(clientSendMSG, sendSize);
 
-        char returnBuffer[4104];
-        int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
+        size_t retSize = 4096;
+        size_t retPos = 0;
+        size_t retHeaderSize = 8;
+        void* returnBuffer = new char[retSize];
+        int readFlag = client->readProtocol(returnBuffer, retHeaderSize);
         
-        int errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
+        char operID = datagrams.deserializeChar(returnBuffer, retPos);
+        char errorID = datagrams.deserializeChar(returnBuffer, retPos);
+        datagrams.deserializePadding(returnBuffer, 2, retPos);
+        int strSize = datagrams.deserializeInt(returnBuffer, retPos);
 
-        if (errorID == -1)
-        {
-            // errorID = -1 to oznacza brak bledu i przyjmujemy string
-            int stringLength = datagrams.deserializeInt(&returnBuffer[4], 4);
-            char * test = new char[stringLength];
-            char * dupa = datagrams.deserializeChar(returnBuffer, stringLength);
-            strcpy(test, returnBuffer+8);
-
-            // Powinien być ciag znakow od 8 do 16 chara
+        if(operID != static_cast<char>(ApiIDS::READDIR)){
+            delete[] clientSendMSG;
+            delete[] returnBuffer;
+            return NULL; // nie ta operacja
         }
-        else
-        {
-            // inaczej ustawiamy errno odpowiednie z errorID
+
+        if(errorID != 0){
+            std::cout << "Zwrocono error: " << errorID << std::endl;
+            delete[] clientSendMSG;
+            delete[] returnBuffer;
+            return NULL; // błąd
+        }
+
+        if(strSize <= 0){
+            delete[] clientSendMSG;
+            delete[] returnBuffer;
             return NULL;
         }
-        
-        std::cout << "Zwrocono error: " << errorID << std::endl;
+        // else
 
-        return NULL;
+        char* resStr = new char[strSize];
+        retPos = 0;
+        readFlag = client->readProtocol(returnBuffer, strSize);
+        datagrams.deserializeString(returnBuffer, resStr, strSize, retPos);
+
+        delete[] returnBuffer;
+        return resStr;
     }
 
     int mynfs_opendir(char * host, char *path)

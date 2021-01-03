@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-CFLAGS := -Wall -Wextra -pedantic -pthread -std=c++17
+CFLAGS := -Wall -Wextra -pedantic -pthread -std=c++17 -Wno-pointer-arith
 
 datagrams.o: datagrams.hpp datagrams.cpp
 	g++ $(CFLAGS) -c datagrams.cpp -o datagrams.o

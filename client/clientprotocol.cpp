@@ -65,7 +65,7 @@ void Client::connectToServer()
     std::cout << "Polaczono z serwerem." << std::endl;
 }
 
-void Client::sendProtocol(char * buffor, std::size_t size)
+void Client::sendProtocol(void* buffor, std::size_t size)
 {
     if (send(sock, buffor, size, 0) == -1)
     {
@@ -77,7 +77,7 @@ void Client::sendProtocol(char * buffor, std::size_t size)
     }
 }
 
-int Client::readProtocol(char * buffor, std::size_t size)
+int Client::readProtocol(void* buffor, std::size_t size)
 {
         int readFlag;
 
