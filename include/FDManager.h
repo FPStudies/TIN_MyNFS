@@ -57,7 +57,7 @@ public:
     bool exist(int fd, int pid);
     bool exist(const std::string& path);
     FileDescriptor& get(int fd, int pid);
-    FileDescriptor&get(int fd);
+    FileDescriptor& get(int fd);
     FDVector get(const std::string& path);
 
 

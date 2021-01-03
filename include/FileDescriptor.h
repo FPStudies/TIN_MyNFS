@@ -46,20 +46,51 @@ public:
     ~FileDescriptor();
     FileDescriptor(FileDescriptor&& other) = default;
 	FileDescriptor(const FileDescriptor& other) = default;
+
     int getID() const;
     const int& getIDConst() const;
     PIDType getPID() const;
-    OffsetType getOffset();
+    //OffsetType getOffset();
     ModeType getMode() const;
     //std::fstream& getFileHandler();
     std::string getPath() const;
     const std::string& getPathConst() const;
     void setfd(int fd);
     int getfd() const;
-    bool isFile() const;
 
     operator std::string() const;
 
+    /**
+     * @brief Checks if descriptor points to an open file
+     * 
+     * @return true descriptor points to an open file
+     * @return false descriptor doesn't point to an open file
+     */
+    bool isFile() const;
+
+    /**
+     * @brief Checks if descriptor points to a directory
+     * 
+     * @return true descriptor points to a directory
+     * @return false descriptor doesn't point to a directory
+     */
+    bool isDirectory() const;
+
+    /**
+     * @brief Checks if descriptor points to a file opened to read
+     * 
+     * @return true descriptor points to a file opened to read
+     * @return false descriptor doesn't point to a file opened to read
+     */
+    bool isReadable() const;
+
+    /**
+     * @brief Checks if descriptor points to a file opened to write
+     * 
+     * @return true descriptor points to a file opened to write
+     * @return false descriptor doesn't point to a file opened to write
+     */
+    bool isWriteable() const;
 
 };
 

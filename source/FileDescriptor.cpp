@@ -74,7 +74,26 @@ int FileDescriptor::getfd() const{
     return fdOS_;
 }
 
-bool FileDescriptor::isFile() const{
-    if(mode_.type == Mode::Type::File) return true;
+bool FileDescriptor::isFile() const
+{
+    if (mode_.type == Mode::Type::File) return true;
+    return false;
+}
+
+bool FileDescriptor::isDirectory() const
+{
+    if (mode_.type == Mode::Type::Catalog) return true;
+    return false;
+}
+
+bool FileDescriptor::isReadable() const
+{
+    if (isFile() && (mode_.operation == Mode::Operation::Read || mode_.operation == Mode::Operation::ReadWrite) ) return true;
+    return false;
+}
+
+bool FileDescriptor::isWriteable() const
+{
+    if (isFile() && (mode_.operation == Mode::Operation::Write || mode_.operation == Mode::Operation::ReadWrite) ) return true;
     return false;
 }

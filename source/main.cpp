@@ -18,14 +18,20 @@ int main(){
 
     FDManager manager;
     IDGen generator;
-    int fdOS = open("tests/main.cpp", O_RDONLY);
+    int fdOS = open("tests/test.txt", O_RDWR);
     if(fdOS == -1) throw std::runtime_error("Could not open file");
-    FileDescriptor fd(generator, getpid(), 0, Mode(Mode::Operation::Read, Mode::Type::File), "None", fdOS);
+    FileDescriptor fd(generator, getpid(), 0, Mode(Mode::Operation::ReadWrite, Mode::Type::File), "None", fdOS);
     manager.add(std::move(fd));
 
     API api;
-    api.mynfs_lseek(fd.getID(), 1, 6, manager);
-    
+    char buf_r[30] = "";
+    api.mynfs_lseek(fd.getID(), 1, 1, manager);
+    std::cout << api.mynfs_write(fd.getID(), "TesT", strlen("TesT"), manager) << std::endl;
+    api.mynfs_lseek(fd.getID(), 1, 0, manager);
+    std::cout << api.mynfs_read(fd.getID(), buf_r, 30, manager) << std::endl;
+    buf_r[29] = '\0';
+    std::cout << buf_r << std::endl;
+
     auto stat = api.mynfs_fstat(fd.getID(), manager);
     
     std::cout<<"size of the file: " << stat.nfs_st_size << std::endl;
@@ -37,6 +43,7 @@ int main(){
     std::cout << "Server-side fd: " << nfs_fd << std::endl;
 
     std::cout << "Hello world" << std::endl;
+
 
     return 0;
 }
