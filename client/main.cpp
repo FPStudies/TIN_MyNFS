@@ -14,6 +14,10 @@ int main()
 	else{
 		std::cout << std::string(ret) << std::endl;
 	}
+
+	if(api.mynfs_closedir(5) == -1){
+		std::cout << "Błąd zamykania" << std::endl;
+	}
 	
 	return 0;
 }

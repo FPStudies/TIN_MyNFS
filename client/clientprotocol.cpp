@@ -65,9 +65,10 @@ void Client::connectToServer()
     std::cout << "Polaczono z serwerem." << std::endl;
 }
 
-void Client::sendProtocol(void* buffor, std::size_t size)
+ssize_t  Client::sendProtocol(void* buffor, std::size_t size)
 {
-    if (send(sock, buffor, size, 0) == -1)
+    ssize_t ret = 0;
+    if ((ret = send(sock, buffor, size, 0)) == -1)
     {
         std::cout << "Nie udalo sie wyslac wiadomosci" << std::endl;
     }
@@ -75,6 +76,7 @@ void Client::sendProtocol(void* buffor, std::size_t size)
     {
         std::cout << "Wyslano wiadomosc" << std::endl;
     }
+    return ret;
 }
 
 int Client::readProtocol(void* buffor, std::size_t size)

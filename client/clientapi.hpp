@@ -71,7 +71,7 @@ public:
         if (clients.find(dirfd) == clients.end())
         {
             // nie istnieje taki
-            // ustawic jakies errno o zlym deskryptorze
+            std::cout << "Nie znaleziono" << std::endl;
             return -1;
         }
         short int fd = static_cast<short int>(dirfd);
@@ -81,12 +81,11 @@ public:
         size_t sendPos = 0;
         void* clientSendMSG = new char[sendSize];
 
-
         datagrams.serializeChar(clientSendMSG, static_cast<char>(ApiIDS::CLOSEDIR), sendPos);
         datagrams.serializePadding(clientSendMSG, 1, sendPos);
         datagrams.serializeShortInt(clientSendMSG, fd, sendPos);
 
-        client->sendProtocol(clientSendMSG, sendSize);
+        auto tmp = client->sendProtocol(clientSendMSG, sendSize);
 
         /////////////////////////////////////////////
 
@@ -100,14 +99,18 @@ public:
         char errorID = datagrams.deserializeChar(returnBuffer, retPos);
         datagrams.deserializePadding(returnBuffer, 2, retPos);
         int reply = datagrams.deserializeInt(returnBuffer, retPos);
+
+        std::cout << (int)operID << " " << (int)errorID << " " << reply << std::endl;
         
         if(operID != static_cast<char>(ApiIDS::CLOSEDIR)){
+            std::cout << "Nie ta operacja " << (int)operID << std::endl;
             delete[] clientSendMSG;
             delete[] returnBuffer;
             return -1; // nie ta operacja
         }
 
         if(errorID != 0){
+            std::cout << "error" << std::endl;
             delete[] clientSendMSG;
             delete[] returnBuffer;
             return -1; // błąd
@@ -135,7 +138,7 @@ public:
         }
 
         Client * client = clients[dirfd];
-        size_t sendSize = 8;
+        size_t sendSize = 4;
         size_t sendPos = 0;
         void* clientSendMSG = new char[sendSize];
         datagrams.serializeChar(clientSendMSG, static_cast<char>(ApiIDS::READDIR), sendPos);

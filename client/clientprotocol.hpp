@@ -12,7 +12,7 @@ public:
     Client(char * address);
 
     void startConnection();
-    void sendProtocol(void* buffor, std::size_t size);
+    ssize_t sendProtocol(void* buffor, std::size_t size);
     int readProtocol(void* buffor, std::size_t size);
     char * getAddress();
 private:
