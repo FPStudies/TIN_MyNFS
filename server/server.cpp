@@ -5,6 +5,22 @@
 #include "server.hpp"
 #include "clienthandler.hpp"
 
+class ClientHandler;
+
+void *clientThread(void *arg)
+{
+    static int clientNums = 1;
+    int sock = *((int *) arg);
+    std::cout << "Utworzono watek klienta nr " << clientNums << ", socket " << sock << std::endl;
+    ClientHandler handler(clientNums++, sock);
+
+    handler.run();
+
+	close(sock);
+    std::cout << "Zamknieto socket " << sock << std::endl;
+	pthread_exit(NULL);
+}
+
 void Server::run()
 {
     createConnectSocket();
@@ -68,7 +84,7 @@ void Server::connectLoop()
 
         std::cout << "Pojawil sie nowy klient. Socket nr " << sock << std::endl;
 
-        if (pthread_create(&tid[i], NULL, clientHandlerThread, &sock) != 0)
+        if (pthread_create(&tid[i], NULL, clientThread, &sock) != 0)
         {
             std::cout << "Nie udalo sie utworzyc watku" << std::endl;
             exit(1);
@@ -94,4 +110,5 @@ int Server::createUserSocket()
 
     return sock;
 }
+
 

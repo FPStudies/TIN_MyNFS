@@ -91,6 +91,6 @@ int Client::readProtocol(char * buffor, std::size_t size)
             std::cout << "Koniec polaczenia z klientem "  << std::endl;
             return 0;
         }
-
+        
         return readFlag;
 }

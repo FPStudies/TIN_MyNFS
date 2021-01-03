@@ -1,6 +1,8 @@
-#pragma once
+ #pragma once
 #include <sys/types.h>
 #include <netinet/in.h>
+
+void *clientThread(void *arg);
 
 class Server
 {

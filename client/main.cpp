@@ -4,9 +4,11 @@
 int main()
 {
 	ClientApi api;
-	//api.mynfs_closedir(123);
 	int fd = api.mynfs_open((char*)"127.0.0.1", (char*)"Dupa", 0, 0);
-	std::cout << "Otrzymano fd: " << fd << std::endl;
-	api.mynfs_readdir(5);
+	api.mynfs_lseek(fd, 100, 255);
+	api.mynfs_close(5);
+	char * dupa = "QWEQWEWQE";
+	api.mynfs_write(5, dupa, 11);
+	std::cout << dupa << std::endl;
 	return 0;
 }
