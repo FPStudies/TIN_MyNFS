@@ -40,10 +40,12 @@ public:
         //std::fstream&& fileHandler
         int fileDescriptor
     );
+	
+
 
     ~FileDescriptor();
     FileDescriptor(FileDescriptor&& other) = default;
-
+	FileDescriptor(const FileDescriptor& other) = default;
     int getID() const;
     const int& getIDConst() const;
     PIDType getPID() const;

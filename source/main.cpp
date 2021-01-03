@@ -20,13 +20,21 @@ int main(){
     IDGen generator;
     int fdOS = open("tests/main.cpp", O_RDONLY);
     if(fdOS == -1) throw std::runtime_error("Could not open file");
-    FileDescriptor fd(generator, 32, 0, Mode(Mode::Operation::Read, Mode::Type::File), "None", fdOS);
-    /*manager.add(std::move(fd));
+    FileDescriptor fd(generator, getpid(), 0, Mode(Mode::Operation::Read, Mode::Type::File), "None", fdOS);
+    manager.add(std::move(fd));
 
     API api;
-    api.mynfs_lseek(fd.getID(), 1, 6, manager, 32);*/
+    api.mynfs_lseek(fd.getID(), 1, 6, manager);
+    
+    auto stat = api.mynfs_fstat(fd.getID(), manager);
+    
+    std::cout<<"size of the file: " << stat.nfs_st_size << std::endl;
 
     close(fdOS);
+    
+    int nfs_fd = api.mynfs_open("tests/test.txt", O_RDONLY | O_CREAT, manager, generator); 
+    
+    std::cout << "Server-side fd: " << nfs_fd << std::endl;
 
     std::cout << "Hello world" << std::endl;
 

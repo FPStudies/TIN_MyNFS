@@ -145,16 +145,18 @@ int API::mynfs_unlink(char* path, FDManager& manager){
 // Wiec wystarczy, że podepniesz pod ten swój FD co tam pisałeś
 
 
-int API::mynsf_opendir(char* host, char* path)
+int API::mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode, int pid)
 {
     logStart();
 	// Tu po prostu wystartczy wywołać tego zwykłego opena i otworzyć katalog
 	// i w sumie open po stronie serwera nie potrzebuje już hosta (to tylko potrzebne u klienta), ale nie wiem jak to Mikołaj tam zakoduej póki co
-	// więc zostawiłem zgodnie z dokumentacją
-
+	// więc zostawiłem zgodnie z dokumentacją - tu miki i mowie, ze dla serwera troche inaczej niz w dokumentacji te parametry wygladaja, ale poprawilem
+	
     logEndCustom("Going to other function.");
-	return 0;//mynfs_open(host, path, O_DIRECTORY, O_RDONLY);
+	return mynfs_open(path, O_RDONLY, manager, gen, mode, pid);
 	// Proponuje jednak otworzyć tutaj od razu DIR *  przez funkcje fdopendir i zapisać 
+	
+	// ~mikolaj - tutaj inaczej zrozumialem parametry naszej metody - flags jako tryb otwarcia a mode jako uprawnienia ( tak jak to jest w linuxowym open, bo mielismy sie wzorowac ), 
 }
 
 char* API::mynsf_readdir(int dirfd)
@@ -239,6 +241,115 @@ int API::mynfs_closedir(int dirfd)
     logEndCustom(error_);
 	return -1;
 }
+
+int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int mode, int pid)
+{
+	logStart();
+	
+   	Mode::Operation op;
+   	Mode::Type tp;
+   	
+   	// check the open-mode of the given file
+	if((oflag & O_RDWR) == O_RDWR) op = Mode::Operation::ReadWrite;
+	else if((oflag & O_RDONLY) == O_RDONLY) op = Mode::Operation::Read;
+	else if((oflag & O_WRONLY) == O_WRONLY) op = Mode::Operation::Write;
+	else
+	{
+		error_ = Error::Type::einval;
+		logEndCustom(error_);
+		return -1;
+	}
+	
+	// set open flags correctly according to the oflag parameter (in case the flag is not valid)
+	
+	int flags;
+	switch(op)
+	{
+		case Mode::Operation::ReadWrite:
+			flags = O_RDWR;
+			break;
+		case Mode::Operation::Read:
+			flags = O_RDONLY;
+			break;
+		case Mode::Operation::Write:
+			flags = O_WRONLY;
+			break;
+		default:
+			error_ = Error::Type::eserv;
+			logEndCustom(error_);
+			return -1;		
+	}
+   	if(oflag & O_CREAT) flags = flags | O_CREAT;
+   	
+   	// open/create a server-side file descriptor
+	int fd;
+	if((fd = open(path, oflag, mode)) == -1)
+	{
+		error_ = Error::Type::eserv;
+		logEndCustom(error_);
+		return -1;
+	}
+   	
+   	// gather info about the file associated with the descriptor
+	struct stat st={};
+   	stat(path, &st);
+   	
+	// check if regular file and handle exceptions
+   	if(S_ISREG(st.st_mode)) tp = Mode::Type::File;
+   	else if(S_ISDIR(st.st_mode))
+   	{
+   		error_ = Error::Type::eisdir;
+   		logEndCustom(error_);
+   		close(fd);
+   		return -1;
+   	}
+   	else
+   	{
+   		error_ = Error::Type::eserv;
+   		logEndCustom(error_);
+   		close(fd);
+   		return -1;
+   	}
+	
+	Mode md(op, tp);
+	FileDescriptor fileDes(gen, pid, 0, md, path, fd);
+	logEndCustom("Pass");
+	return fileDes.getID();
+}
+
+struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
+{
+
+	struct mynfs_stat fileStat = {};
+ 
+	logStart();
+    if(!manager.exist(mynfs_fd)) 
+    {
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        fileStat.nfs_st_valid = false;
+        return fileStat;
+    }
+    
+    FileDescriptor fileDes( manager.get(mynfs_fd) ); 
+    
+  	struct stat st={};
+	if(fstat(fileDes.getfd(), &st) == -1)
+	{
+		error_ = Error::Type::eserv;
+		logEndCustom(error_);
+		fileStat.nfs_st_valid = false;
+		return fileStat;
+	}
+
+	fileStat.nfs_st_valid = true;
+	fileStat.nfs_st_size = (int32_t)st.st_size; 
+	fileStat.nfs_st_atime = (int32_t)st.st_atime; 
+	fileStat.nfs_st_mtime = (int32_t)st.st_mtime;
+	
+	logEndCustom("Pass");
+	return fileStat;
+} 
 
 bool API::checkPathLength(char* path){
     if(strlen(path) < MAX_PATH_LEN) return true;
