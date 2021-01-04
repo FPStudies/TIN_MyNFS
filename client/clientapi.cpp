@@ -1,3 +1,14 @@
+/**
+ * @file clientapi.cpp
+ * @author Mateusz Kordowski, Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #include "clientapi.hpp"
 
 ClientApi::ClientApi()
@@ -7,7 +18,13 @@ ClientApi::ClientApi()
 
 int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
 {
-    int pathLength = strlen(path);
+    if(path == NULL || path == nullptr){
+        std::cout << "Nie podano ścieżki" << std::endl;
+        setErrno(0); // Podać prawidłowe errno
+        return -1;
+    }
+
+    int pathLength = strlen(path) + 1;
 
     if (pathLength > 4096)
     {
@@ -34,33 +51,27 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         client = new Client(host);
         client->startConnection();
     }
-
-    char clientSendMSG[16];
-    clientSendMSG[0] = (int)ApiIDS::OPEN;
-    clientSendMSG[1] = 0; // padding
-    clientSendMSG[2] = 0;
-    clientSendMSG[3] = 0;
-    datagrams.serializeInt(&clientSendMSG[4], oflag, 4);
-    datagrams.serializeInt(&clientSendMSG[8], mode, 4);
-    datagrams.serializeInt(&clientSendMSG[12], pathLength, 4);
-
-    client->sendProtocol(clientSendMSG, 16); // wysylamy naglowek
-    client->sendProtocol(path, pathLength + 1); // wysylamy sciezke
-
-
-    char returnBuffer[8];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-    int fd = datagrams.deserializeInt(&returnBuffer[4], 4);
-    int errorID = 0;
-    if (fd == -1)
+    OpenFileRecData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::OPEN);
+    sendData.fileDescriptor = 0;
+    sendData.oflag = oflag;
+    sendData.mode = mode;
+    sendData.pathLength = pathLength;
+    Serialize::sendStruct(sendData, *client);
+    // TODO odebrać potwierdzenie
+    Serialize sendPath(pathLength);
+    sendPath.serializeString(path, pathLength);
+    sendPath.sendData(*client);
+    
+    DefRetIntSendData rec;
+    Deserialize::receiveStruct(rec, *client);
+    if (rec.retVal == -1)
     {
-        errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-        setErrno(errorID);
+        setErrno(rec.errorID);
     }
-    std::cout << "Zwrocono FD: " << fd << ", error: " << errorID << std::endl;
+    std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
 
-    fd = 5; // To usunac pozniej. podany do testow
+    int fd = 5; // To usunac pozniej. podany do testow
     
     clients.insert(std::pair<int, Client*> (fd, client));
     return fd;
@@ -78,35 +89,26 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 
     Client * client = clients[mynfs_fd];
 
-    char clientSendMSG[8];
-    clientSendMSG[0] = (int)ApiIDS::READ;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], mynfs_fd, 2);
-    datagrams.serializeInt(&clientSendMSG[4], len, 4);
+    DefRecIntData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::READ);
+    sendData.fileDescriptor = mynfs_fd;
+    sendData.length = len;
+    Serialize::sendStruct(sendData, *client);
 
-    client->sendProtocol(clientSendMSG, sizeof(clientSendMSG));
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
 
-    
-    char returnBuffer[4104];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-    int errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-
-    if (errorID == -1)
+    if (recData.errorID == 0)
     {
-        // errorID = -1 to oznacza brak bledu i przyjmujemy string
-        // Trzeba to uwzględnić w dokumentacji
+        Deserialize recString(len); // TODO sprawdzić czy dla dużych wartości działa
+        recString.receiveData(*client);
+        recString.deserializeString(buf, recData.retVal);
 
-        int stringLength = datagrams.deserializeInt(&returnBuffer[4], 4);
-        strcpy(buf, &returnBuffer[8]);
+        return recData.retVal;
+    }
 
-        return stringLength;
-    }
-    else
-    {
-        setErrno(errorID);
-        return -1;
-    }
+    setErrno(recData.errorID);
+    return -1;
 }
 
 int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
@@ -120,26 +122,25 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
     }
 
     Client * client = clients[mynfs_fd];
-    char clientSendMSG[16];
-    clientSendMSG[0] = (int)ApiIDS::WRITE;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], mynfs_fd, 2);
-    datagrams.serializeInt(&clientSendMSG[4], len, 4);
+    DefRecIntData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::WRITE);
+    sendData.fileDescriptor = mynfs_fd;
+    sendData.length = len;
+    Serialize::sendStruct(sendData, *client);// wysylamy naglowek
+    
+    // TODO sprawdzenie czy serwer przyjmie zgłoszenie na len bajtów
+    Serialize sendStr(len);
+    sendStr.serializeString(buf, len);
+    sendStr.sendData(*client);// wysylamy dane do zapisu
 
-    client->sendProtocol(clientSendMSG, sizeof(clientSendMSG)); // wysylamy naglowek
-    client->sendProtocol(const_cast<char*>(buf), len + 1); // wysylamy dane do zapisu
-
-    char returnBuffer[8];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-    int retVal = datagrams.deserializeInt(&returnBuffer[4], 4);
-    int errorID = 0;
-    if (retVal == -1)
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
+    if (recData.retVal == -1)
     {
-        errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-        setErrno(errorID);
+        setErrno(recData.errorID);
     }
-    std::cout << "Zwrocono ret: " << retVal << ", error: " << errorID << std::endl;
+    std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
+    return recData.retVal;
 }
 
 int ClientApi::mynfs_lseek(int mynfs_fd, int whence, int offset)
@@ -153,30 +154,22 @@ int ClientApi::mynfs_lseek(int mynfs_fd, int whence, int offset)
     }
 
     Client * client = clients[mynfs_fd];
+    LseekRecData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::LSEEK);
+    sendData.fileDescriptor = mynfs_fd;
+    sendData.whence = whence;
+    sendData.offset = offset;
+    Serialize::sendStruct(sendData, *client);
 
-    char clientSendMSG[12];
-    clientSendMSG[0] = (int)ApiIDS::LSEEK;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], mynfs_fd, 2);
-    datagrams.serializeInt(&clientSendMSG[4], whence, 4);
-    datagrams.serializeInt(&clientSendMSG[8], offset, 4);
-
-    client->sendProtocol(clientSendMSG, sizeof(clientSendMSG));
-
-    char returnBuffer[8];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-
-    int retVal = datagrams.deserializeInt(&returnBuffer[4], 4);
-    int errorID = 0;
-    if (retVal == -1)
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
+    if (recData.retVal == -1)
     {
-        errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-        setErrno(errorID);
+        setErrno(recData.errorID);
     }
-    std::cout << "Zwrocono ret: " << retVal << ", error: " << errorID << std::endl;
+    std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
 
-    return retVal;
+    return recData.retVal;
 }
 
 int ClientApi::mynfs_close(int mynfs_fd)
@@ -191,27 +184,20 @@ int ClientApi::mynfs_close(int mynfs_fd)
     
     Client * client = clients[mynfs_fd];
 
-    char clientSendMSG[12];
-    clientSendMSG[0] = (int)ApiIDS::CLOSE;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], mynfs_fd, 2);
-    client->sendProtocol(clientSendMSG, sizeof(clientSendMSG));
+    RecDataOneLine sendData;
+    sendData.operID = static_cast<char>(ApiIDS::CLOSE);
+    sendData.fileDescriptor = mynfs_fd;
+    Serialize::sendStruct(sendData, *client);
 
-
-    char returnBuffer[8];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-    int retVal = datagrams.deserializeInt(&returnBuffer[4], 4);
-    int errorID = 0;
-    if (retVal == -1)
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
+    if (recData.retVal == -1)
     {
-        errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-        setErrno(errorID);
+        setErrno(recData.errorID);
     }
-    std::cout << "Zwrocono ret: " << retVal << ", error: " << errorID << std::endl;
+    std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
 
-    return retVal;
-
+    return recData.retVal;
 }
 
 int ClientApi::mynfs_closedir(int dirfd)
@@ -225,27 +211,20 @@ int ClientApi::mynfs_closedir(int dirfd)
     }
 
     Client * client = clients[dirfd];
-    char clientSendMSG[4];
+    RecDataOneLine sendData;
+    sendData.operID = static_cast<char>(ApiIDS::CLOSEDIR);
+    sendData.fileDescriptor = dirfd;
+    Serialize::sendStruct(sendData, *client);
 
-    clientSendMSG[0] = (int)ApiIDS::CLOSEDIR;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], dirfd, 2);
-
-    client->sendProtocol(&clientSendMSG[0], sizeof(clientSendMSG));
-
-    char returnBuffer[8];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-
-    int retVal = datagrams.deserializeInt(&returnBuffer[4], 4);
-    int errorID = 0;
-    if (retVal == -1)
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
+    if (recData.retVal == -1)
     {
-        errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-        setErrno(errorID);
+        setErrno(recData.errorID);
     }
-    std::cout << "Zwrocono ret: " << retVal << ", error: " << errorID << std::endl;
+    std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
 
-    return retVal; 
+    return recData.retVal; 
 }
 
 char * ClientApi::mynfs_readdir(int dirfd)
@@ -259,32 +238,27 @@ char * ClientApi::mynfs_readdir(int dirfd)
     }
 
     Client * client = clients[dirfd];
-    char clientSendMSG[4];
-    clientSendMSG[0] = (int)ApiIDS::READDIR;
-    clientSendMSG[1] = 0; // padding
-    datagrams.serializeInt(&clientSendMSG[2], dirfd, 2);
+    RecDataOneLine sendData;
+    sendData.operID = static_cast<char>(ApiIDS::READDIR);
+    sendData.fileDescriptor = dirfd;
+    Serialize::sendStruct(sendData, *client);
 
-    client->sendProtocol(&clientSendMSG[0], sizeof(clientSendMSG));
-
-    char returnBuffer[4104];
-    int readFlag = client->readProtocol(returnBuffer, sizeof(returnBuffer));
-    
-    int errorID = datagrams.deserializeInt(&returnBuffer[1], 1);
-
-    if (errorID == -1)
+    DefRetIntSendData recData;
+    Deserialize::receiveStruct(recData, *client);
+    // TODO wysłanie potwierdzenia wysłania takiej ilości bajtów
+    if (recData.errorID == 0)
     {
-        // errorID = -1 to oznacza brak bledu i przyjmujemy string
-        int stringLength = datagrams.deserializeInt(&returnBuffer[4], 4);
-
-        char * dirString = new char[stringLength];
-        strcpy(dirString, &returnBuffer[8]);
+        Deserialize recStr(recData.retVal);
+        recStr.receiveData(*client);
+        char * dirString = new char[recData.retVal];
+        recStr.deserializeString(dirString, recData.retVal);
 
         // dirString - zwrócona zawartość katalogu
         return dirString;
     }
     else
     {
-        setErrno(errorID);
+        setErrno(recData.errorID);
         return NULL;
     }
 }

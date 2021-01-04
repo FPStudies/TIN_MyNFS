@@ -8,7 +8,6 @@ int main()
 	api.mynfs_lseek(fd, 100, 255);
 	api.mynfs_close(5);
 	char * dupa = "QWEQWEWQE";
-	api.mynfs_write(5, dupa, 11);
-	std::cout << dupa << std::endl;
+	std::cout << api.mynfs_write(5, dupa, 11) << std::endl;
 	return 0;
 }

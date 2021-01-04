@@ -1,3 +1,14 @@
+/**
+ * @file clientapi.hpp
+ * @author Mateusz Kordowski, Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once
 #include <iostream>
 #include <map>
@@ -8,9 +19,9 @@
 #include "datagrams.hpp"
 
 
-enum class ApiIDS
+enum class ApiIDS: char
 {
-    OPEN,
+    OPEN = 2,
     READ,
     WRITE,
     LSEEK,
@@ -37,7 +48,6 @@ public:
     int mynfs_opendir(char *host, char *path);
 
 private:
-    Datagrams datagrams;
     std::map<int, Client*> clients;
 
     void setErrno(int errorID);

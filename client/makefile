@@ -16,3 +16,6 @@ main.o: main.cpp clientapi.o
 
 all: main.o
 	g++ $(CFLAGS) -o client main.o clientapi.o clientprotocol.o datagrams.o
+
+clean:
+	rm -f *.o

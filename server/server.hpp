@@ -1,3 +1,13 @@
+/**
+ * @file server.hpp
+ * @author Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
  #pragma once
 #include <sys/types.h>
 #include <netinet/in.h>

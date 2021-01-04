@@ -1,3 +1,13 @@
+/**
+ * @file clientprotocol.cpp
+ * @author Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include <sys/socket.h>
 #include <iostream>
 #include <unistd.h>
@@ -65,32 +75,6 @@ void Client::connectToServer()
     std::cout << "Polaczono z serwerem." << std::endl;
 }
 
-void Client::sendProtocol(char * buffor, std::size_t size)
-{
-    if (send(sock, buffor, size, 0) == -1)
-    {
-        std::cout << "Nie udalo sie wyslac wiadomosci" << std::endl;
-    }
-    else
-    {
-        std::cout << "Wyslano wiadomosc" << std::endl;
-    }
-}
-
-int Client::readProtocol(char * buffor, std::size_t size)
-{
-        int readFlag;
-
-        if ((readFlag = read(sock, buffor, size)) == -1)
-        {
-            std::cout << "Nie udalo sie odebrac." << std::endl;
-            return -1;
-        }
-        else if (readFlag == 0)
-        {
-            std::cout << "Koniec polaczenia z klientem "  << std::endl;
-            return 0;
-        }
-        
-        return readFlag;
+int Client::getSocket() const{
+    return sock;
 }

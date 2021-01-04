@@ -1,3 +1,14 @@
+/**
+ * @file clienthandler.hpp
+ * @author Mateusz Kordowski, Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once
 
 
@@ -10,9 +21,9 @@
 
 #include "datagrams.hpp"
 
-enum class ApiIDS
+enum class ApiIDS: char
 {
-    OPEN,
+    OPEN = 2,
     READ,
     WRITE,
     LSEEK,
@@ -33,16 +44,12 @@ public:
 private:
     int clientNum;
     int sock;
-    Datagrams datagrams;
 
-    void openFile(char * buffer);
-    void readFile(char * buffer);
-    void writeFile(char * buffer);
-    void lseekFile(char * buffer);
-    void closeFile(char * buffer);
-    void closeDir(char * buffer);
-    void readDir(char * buffer);
-
-    int readProtocol(char * buffer, std::size_t size);
-    int sendProtocol(char * buffbufferor, std::size_t size);
+    void openFile(Deserialize& data);
+    void readFile(Deserialize& data);
+    void writeFile(Deserialize& data);
+    void lseekFile(Deserialize& data);
+    void closeFile(Deserialize& data);
+    void closeDir(Deserialize& data);
+    void readDir(Deserialize& data);
 };

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := all
 
-CFLAGS := -Wextra -pedantic -pthread -std=c++17 -Wno-unused-variable
+CFLAGS := -Wextra -pedantic -pthread -std=c++17 #-Wno-unused-variable -Wpointer-arith
 
 datagrams.o: datagrams.hpp datagrams.cpp
 	g++ $(CFLAGS) -c datagrams.cpp -o datagrams.o
@@ -16,3 +16,6 @@ main.o: main.cpp server.o
 
 all: main.o
 	g++ $(CFLAGS) -o server main.o server.o clienthandler.o datagrams.o
+
+clean:
+	rm -f *.o

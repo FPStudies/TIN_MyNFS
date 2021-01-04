@@ -1,3 +1,14 @@
+/**
+ * @file clientprotocol.hpp
+ * @author Maciej Adamski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
+
 #pragma once 
 
 #include <sys/types.h>
@@ -15,6 +26,8 @@ public:
     void sendProtocol(char * buffor, std::size_t size);
     int readProtocol(char * buffor, std::size_t size);
     char * getAddress();
+    int getSocket() const;
+    
 private:
     static const int PORT = 21370;
     int sock;
