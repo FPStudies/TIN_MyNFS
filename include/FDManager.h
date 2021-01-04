@@ -51,12 +51,9 @@ public:
     FDManager& operator=(FDManager&& oother) = delete;
 
     bool add(FileDescriptor&& fileDescriptor);
-    bool remove(int fd, int pid);
     bool remove(int fd);
     bool exist(int fd);
-    bool exist(int fd, int pid);
     bool exist(const std::string& path);
-    FileDescriptor& get(int fd, int pid);
     FileDescriptor& get(int fd);
     FDVector get(const std::string& path);
 

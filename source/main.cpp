@@ -25,7 +25,7 @@ int main(){
     IDGen generator;
     int fdOS = open("tests/test.txt", O_RDWR);
     if(fdOS == -1) throw std::runtime_error("Could not open file");
-    FileDescriptor fd(generator, getpid(), 0, Mode(Mode::Operation::ReadWrite, Mode::Type::File), "None", fdOS);
+    FileDescriptor fd(generator, 0, Mode(Mode::Operation::ReadWrite, Mode::Type::File), "None", fdOS);
     manager.add(std::move(fd));
 
     API api;

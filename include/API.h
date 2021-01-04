@@ -43,11 +43,11 @@ struct API{
     int mynfs_close(int fd, FDManager& manager);
     int mynfs_unlink(char* path, FDManager& manager);
 
-    int mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode = 0660, int pid = 0);
+    int mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode = 0660);
     char* mynsf_readdir(int dirfd);
     int mynfs_closedir(int dirfd);
 
-	int mynfs_open(char* path, int oflag,  FDManager& manager, IDGen& gen, int mode = 0660, int pid = 0);
+	int mynfs_open(char* path, int oflag,  FDManager& manager, IDGen& gen, int mode = 0660);
 	mynfs_stat mynfs_fstat(int mynfs_fd, FDManager& manager);
 
     /**

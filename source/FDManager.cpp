@@ -23,19 +23,6 @@ bool FDManager::add(FileDescriptor&& fileDescriptor){
     return tmp.second;
 }
 
-bool FDManager::remove(int fd, int pid){
-    logStart();
-    auto& index = fd_.get<IndexById>();
-    auto found = index.find(fd);
-    if(found == index.end() || (*found)->fd.getPID() != pid) {
-        logEndCustom("Does not exist");
-        return false;
-    }
-    index.erase(found);
-    logEndCustom("Removed");
-    return true;
-}
-
 bool FDManager::remove(int fd){
     logStart();
     auto& index = fd_.get<IndexById>();
@@ -61,18 +48,6 @@ bool FDManager::exist(int fd){
     return false;
 }
 
-bool FDManager::exist(int fd, int pid){
-    logStart();
-    auto& index = fd_.get<IndexById>();
-    auto tmp = index.find(fd);
-    if(tmp != index.end() && (*tmp)->fd.getPID() == pid) {
-        logEndCustom("Does exist");
-        return true;
-    }
-    logEndCustom("Does not exist");
-    return false;
-}
-
 bool FDManager::exist(const std::string& path){
     logStart();
     auto& index = fd_.get<IndexByPath>();
@@ -83,18 +58,6 @@ bool FDManager::exist(const std::string& path){
     }
     logEndCustom("Does not exist");
     return false;
-}
-
-FileDescriptor& FDManager::get(int fd, int pid){
-    logStart();
-    auto& index = fd_.get<IndexById>();
-    auto& tmp = *index.find(fd);
-    if(tmp->fd.getPID() != pid) {
-        logError("PID does not match the descryptor.");
-        throw std::out_of_range("PID does not match the descryptor.");
-    }
-    logEndCustom(static_cast<std::string>(tmp->fd));
-    return tmp->fd;
 }
 
 FileDescriptor& FDManager::get(int fd){
