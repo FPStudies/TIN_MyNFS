@@ -11,8 +11,8 @@
 #include <netdb.h>
 #include <iostream>
 #include <unistd.h>
-#include "server.hpp"
-#include "clienthandler.hpp"
+#include "server.h"
+#include "clienthandler.h"
 
 class ClientHandler;
 

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "datagrams.hpp"
+#include "datagrams.h"
 
 Datagram::Datagram(size_t bufSize) 
 : pos(0), allDataSize(0), bufSize(bufSize), buffor(new char[bufSize]), del(true)

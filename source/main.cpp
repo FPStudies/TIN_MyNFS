@@ -16,6 +16,11 @@ int main(){
     spdlog::set_level(spdlog::level::debug);
     #endif
 
+    /*
+    Server server;
+	server.run();
+    */
+
     FDManager manager;
     IDGen generator;
     int fdOS = open("tests/test.txt", O_RDWR);

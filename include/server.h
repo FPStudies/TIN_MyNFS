@@ -1,5 +1,5 @@
 /**
- * @file server.hpp
+ * @file server.h
  * @author Maciej Adamski
  * @brief 
  * @version 0.1

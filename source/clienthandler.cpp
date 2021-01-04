@@ -10,7 +10,7 @@
  */
 
 #include <iostream>
-#include "clienthandler.hpp"
+#include "clienthandler.h"
 
 ClientHandler::ClientHandler(int clientNum, int sock) : clientNum(clientNum), sock(sock)
 {

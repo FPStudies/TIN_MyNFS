@@ -1,5 +1,5 @@
 /**
- * @file clienthandler.hpp
+ * @file clienthandler.h
  * @author Mateusz Kordowski, Maciej Adamski
  * @brief 
  * @version 0.1

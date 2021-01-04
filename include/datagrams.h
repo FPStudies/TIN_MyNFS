@@ -1,5 +1,5 @@
 /**
- * @file datagrams.hpp
+ * @file datagrams.h
  * @author Mateusz Kordowski
  * @brief 
  * @version 0.1
