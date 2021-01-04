@@ -1,3 +1,5 @@
 external/spdlog
 Program
 Test
+*.o
+*.a
