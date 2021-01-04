@@ -19,7 +19,7 @@
 #include <cstddef>
 #include <cstring>
 
-#include "datagrams.hpp"
+#include "datagrams.h"
 
 enum class ApiIDS: char
 {

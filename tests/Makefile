@@ -3,7 +3,7 @@
 
 SOURCE = $(wildcard *.cpp)
 BINARIES = $(wildcard *.o)
-FLAGS = -Wall -g
+FLAGS = -Wall -g -Wextra -pedantic -pthread -std=c++17
 
 INCLUDE = -I../include
 
