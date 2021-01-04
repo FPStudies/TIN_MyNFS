@@ -139,7 +139,7 @@ int API::mynfs_unlink(char* path, FDManager& manager){
 // Wiec wystarczy, że podepniesz pod ten swój FD co tam pisałeś
 
 
-int API::mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode)
+int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 {
     logStart();
 	// Tu po prostu wystartczy wywołać tego zwykłego opena i otworzyć katalog
@@ -479,4 +479,9 @@ int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
 bool API::checkPathLength(char* path){
     if(strlen(path) < MAX_PATH_LEN) return true;
     return false;
+}
+
+
+Error API::getError(){
+    return error_;
 }

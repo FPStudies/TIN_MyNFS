@@ -9,7 +9,6 @@
  * 
  */
 
-#include <iostream>
 #include "clienthandler.h"
 
 ClientHandler::ClientHandler(int clientNum, int sock) : clientNum(clientNum), sock(sock)
@@ -21,8 +20,9 @@ void ClientHandler::run()
 {
     bool run = true;
     int readFlag;
-    int fd;
     ApiIDS id;
+    FDManager fdManager;
+    IDGen idGen;
     std::cout << "Polaczono klienta nr "<< clientNum << ". Socket " << sock << std::endl;
     while(run)
     {
@@ -37,25 +37,25 @@ void ClientHandler::run()
             switch (id)
             {
                 case ApiIDS::OPEN:
-                    openFile(data);
+                    openFile(data, fdManager, idGen);
                     break;
                 case ApiIDS::READ:
-                    readFile(data);
+                    readFile(data, fdManager);
                     break;
                 case ApiIDS::WRITE:
-                    writeFile(data);
+                    writeFile(data, fdManager);
                     break;
                 case ApiIDS::LSEEK:
-                    lseekFile(data);
+                    lseekFile(data, fdManager);
                     break;
                 case ApiIDS::CLOSE:
-                    closeFile(data);
+                    closeFile(data, fdManager);
                     break;
                 case ApiIDS::CLOSEDIR:
-                    closeDir(data);
+                    closeDir(data, fdManager);
                     break;
                 case ApiIDS::READDIR:
-                    readDir(data);
+                    readDir(data, fdManager);
                     break;       
                 default:
                     std::cout << "nieznana operacja\n"; // TODO         
@@ -64,8 +64,9 @@ void ClientHandler::run()
     }
 }
 
-void ClientHandler::openFile(Deserialize& data)
+void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
 {
+    API api;
     OpenFileRecData received;
     data.castBufferToStruct(received);
 
@@ -74,127 +75,118 @@ void ClientHandler::openFile(Deserialize& data)
     char* path = new char[received.pathLength];
     retString.deserializeString(path, received.pathLength);
 
-    // Wywolac funkcje open z podanymi wyzej parametrami
-    // ustawic te wartosci nizej:
-
     DefRetIntSendData ret;
+    ret.retVal = api.mynfs_open(path, received.oflag, manager, gen, received.mode);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPEN);
-    ret.errorID = 2;
-    ret.retVal = -1;
     Serialize::sendStruct(ret, sock, clientNum);
 
     delete path;
 }
 
-void ClientHandler::readFile(Deserialize& data)
+void ClientHandler::readFile(Deserialize& data, FDManager& manager)
 {
+    API api;
     DefRecIntData rec;
     data.castBufferToStruct(rec);
-
-    // Wywolac funkcje open z podanymi wyzej parametrami
-    // ustawic te wartosci nizej:
+    char* buf = new char[rec.length];
 
     DefRetIntSendData ret;
+    ret.retVal = api.mynfs_read(rec.fileDescriptor, buf, rec.length, manager);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::READ);
-    ret.errorID = 0;
-    ret.retVal = 11;
     Serialize::sendStruct(ret, sock, clientNum);
 
-    char * readString = "DUPADUPA22"; // to ma byc zwrocony string
-
     Serialize retString(ret.retVal);
-
-    retString.serializeString(readString, ret.retVal);
+    retString.serializeString(buf, ret.retVal);
     retString.sendData(sock, clientNum);
+    delete[] buf;
 }
 
-void ClientHandler::writeFile(Deserialize& data)
+void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
 {
+    API api;
     DefRecIntData rec;
+    DefRetIntSendData ret;
     data.castBufferToStruct(rec);
     // TODO wysłanie potwierdzenia, że przyjmiemy tyle bajtów
     Deserialize retString(rec.length);
     retString.receiveData(sock, clientNum);
-    char* toWrite = new char[rec.length];// Tu bedziecie miec sciezke do pliku
-    
+
+    char* toWrite = new char[rec.length];
     retString.deserializeString(toWrite, rec.length);
-
-    // Wywolac funkcje open z podanymi wyzej parametrami
-    // ustawic te wartosci nizej:
-
-    DefRetIntSendData ret;
+    ret.retVal = api.mynfs_write(rec.fileDescriptor, toWrite, rec.length, manager);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::WRITE);
-    ret.errorID = 2;
-    ret.retVal = -1;
     Serialize::sendStruct(ret, sock, clientNum);
 
-    delete toWrite;
+    delete[] toWrite;
 }
 
-void ClientHandler::lseekFile(Deserialize& data)
+void ClientHandler::lseekFile(Deserialize& data, FDManager& manager)
 {
+    API api;
     LseekRecData rec;
-    data.castBufferToStruct(rec);
-
-    // Wywolac funkcje open z podanymi wyzej parametrami
-    // ustawic te wartosci nizej:
-
     DefRetIntSendData ret;
+    data.castBufferToStruct(rec);
+    ret.retVal = api.mynfs_lseek(rec.fileDescriptor, rec.whence, rec.offset, manager);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::LSEEK);
-    ret.errorID = 0;
-    ret.retVal = 5;
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
-void ClientHandler::closeFile(Deserialize& data)
+void ClientHandler::closeFile(Deserialize& data, FDManager& manager)
 {
+    API api;
     RecDataOneLine rec;
-    data.castBufferToStruct(rec);
-
-    // wywolac funkcje z fd tym
-    // ustawic parametry nizej:
     DefRetIntSendData ret;
+    data.castBufferToStruct(rec);
+    ret.retVal = api.mynfs_close(rec.fileDescriptor, manager);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSE);
-    ret.errorID = 0;
-    ret.retVal = 10;
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
-void ClientHandler::closeDir(Deserialize& data)
+void ClientHandler::closeDir(Deserialize& data, FDManager& manager)
 {
+    API api;
     RecDataOneLine rec;
-    data.castBufferToStruct(rec);
-
-    // Wywolac funkcje open z podanymi wyzej parametrami
-    // ustawic te wartosci nizej:
-
     DefRetIntSendData ret;
+    data.castBufferToStruct(rec);
+    ret.retVal = api.mynfs_closedir(rec.fileDescriptor);
+    ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSEDIR);
-    ret.errorID = 0;
-    ret.retVal = 10;
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
-void ClientHandler::readDir(Deserialize& data)
-{
+void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO sprawdzić czy na pewno ok
+{ 
+    API api;
     RecDataOneLine rec;
+    DefRetIntSendData ret;
     data.castBufferToStruct(rec);
 
-    // wywolac funkcje z fd tym
-    // ustawic parametry nizej:
-
-    DefRetIntSendData ret;
+    char* buf = api.mynsf_readdir(rec.fileDescriptor);
     ret.operID = static_cast<char>(ApiIDS::READDIR);
-    ret.errorID = 0;
-    ret.retVal = 11;
+    ret.errorID = api.getError();
+
+    if(buf == NULL){ // zawsze musi przy błędzie zwracać NULL
+        ret.retVal = 0;        
+    }
+    else{
+        ret.retVal = strlen(buf); // musi kończyć się nullem
+    }
+
     Serialize::sendStruct(ret, sock, clientNum);
 
-    char * returnString = "DUPADUPA22";
-
+    if(buf != NULL){
     Serialize retString(ret.retVal);
     // TODO odebranie potwierdzenia od klienta odnośnie przesłania danych
 
-    retString.serializeString(returnString, ret.retVal);
+    retString.serializeString(buf, ret.retVal);
     retString.sendData(sock, clientNum);
+    }    
+
+    delete[] buf;
 }
 

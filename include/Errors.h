@@ -1,3 +1,13 @@
+/**
+ * @file Errors.h
+ * @author Mateusz Kordowski
+ * @brief 
+ * @version 0.1
+ * @date 2021-01-04
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #ifndef ERRORS_H
 #define ERRORS_H
 
@@ -64,6 +74,10 @@ public:
         return static_cast<int>(error);
     }
 
+    static int toChar(Type error){
+        return static_cast<char>(error);
+    }
+
     static std::string toString(Type type){
         switch(type){
             case Type::NONE:
@@ -125,6 +139,14 @@ public:
 
     operator std::string(){
         return this->toString(this->type_);
+    }
+
+    operator char(){
+        return this->toChar(this->type_);
+    }
+
+    operator int(){
+        return this->toInt(this->type_);
     }
 
     //TODO: standard UNIX value, to be changed when agreed on

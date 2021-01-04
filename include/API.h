@@ -43,7 +43,7 @@ struct API{
     int mynfs_close(int fd, FDManager& manager);
     int mynfs_unlink(char* path, FDManager& manager);
 
-    int mynfs_opendir(char* host, char* path, FDManager& manager, IDGen& gen, int mode = 0660);
+    int mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode = 0660);
     char* mynsf_readdir(int dirfd);
     int mynfs_closedir(int dirfd);
 
@@ -71,6 +71,8 @@ struct API{
      * @return int on success - number of bytes written / on failure - value -1
      */
     int mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager);
+
+    Error getError();
 
 private:
     Error error_;

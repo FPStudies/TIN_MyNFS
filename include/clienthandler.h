@@ -20,6 +20,7 @@
 #include <cstring>
 
 #include "datagrams.h"
+#include "API.h"
 
 enum class ApiIDS: char
 {
@@ -45,11 +46,11 @@ private:
     int clientNum;
     int sock;
 
-    void openFile(Deserialize& data);
-    void readFile(Deserialize& data);
-    void writeFile(Deserialize& data);
-    void lseekFile(Deserialize& data);
-    void closeFile(Deserialize& data);
-    void closeDir(Deserialize& data);
-    void readDir(Deserialize& data);
+    void openFile(Deserialize& data, FDManager& manager, IDGen& gen);
+    void readFile(Deserialize& data, FDManager& manager);
+    void writeFile(Deserialize& data, FDManager& manager);
+    void lseekFile(Deserialize& data, FDManager& manager);
+    void closeFile(Deserialize& data, FDManager& manager);
+    void closeDir(Deserialize& data, FDManager& manager);
+    void readDir(Deserialize& data, FDManager& manager);
 };
