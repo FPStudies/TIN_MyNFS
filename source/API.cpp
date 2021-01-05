@@ -147,13 +147,13 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 	// więc zostawiłem zgodnie z dokumentacją - tu miki i mowie, ze dla serwera troche inaczej niz w dokumentacji te parametry wygladaja, ale poprawilem
 	
     logEndCustom("Going to other function.");
-	return mynfs_open(path, O_RDONLY, manager, gen, mode);
+	return mynfs_open(path, mode, manager, gen);
 	// Proponuje jednak otworzyć tutaj od razu DIR *  przez funkcje fdopendir i zapisać 
 	
 	// ~mikolaj - tutaj inaczej zrozumialem parametry naszej metody - flags jako tryb otwarcia a mode jako uprawnienia ( tak jak to jest w linuxowym open, bo mielismy sie wzorowac ), 
 }
 
-char* API::mynsf_readdir(int dirfd)
+char* API::mynsf_readdir(int dirfd, FDManager& manager)
 {
     logStart();
 	if (dirfd < 0)
@@ -163,14 +163,18 @@ char* API::mynsf_readdir(int dirfd)
 		return NULL;
 	}
 
+    auto fileDes = manager.get(dirfd);
+    auto fd = fileDes.getfd();
+
 	// Chyba trzeba b�dzie gdzie� sk�adowa� ten DIR, �eby go nie otwiera� ca�y czas
 	// Można otworzyć w funkcji opendir i zapisać do klasy, a później z niego korzystać.
 	// Zgodnie z tym co wklejałem z dokumentacji
 	// After a successful call to fdopendir(), fd is used internally by the implementation, and should not otherwise be used by the application.
 
-	DIR* dir = fdopendir(dirfd);
+	DIR* dir = fdopendir(fd);
 	if (dir == NULL)
 	{
+        std::cout<<"after open\n";
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
 		return NULL;
@@ -206,7 +210,7 @@ char* API::mynsf_readdir(int dirfd)
 	return returnChar;
 }
 
-int API::mynfs_closedir(int dirfd)
+int API::mynfs_closedir(int dirfd, FDManager& manager)
 {
     logStart();
 	if (dirfd < 0)
@@ -216,7 +220,10 @@ int API::mynfs_closedir(int dirfd)
 		return -1;
 	}
 
-	DIR* dir = fdopendir(dirfd);
+    auto fileDes = manager.get(dirfd);
+    auto fd = fileDes.getfd();
+
+	DIR* dir = fdopendir(fd);
 	if (dir == NULL)
 	{
         error_ = Error::Type::ebadf;
@@ -228,6 +235,7 @@ int API::mynfs_closedir(int dirfd)
 	{
 		// Udalo sie zamknac
         logEndCustom("Pass.");
+        manager.remove(dirfd);
 		return 0;
 	}
 
@@ -273,13 +281,15 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 			logEndCustom(error_);
 			return -1;		
 	}
-   	if(oflag & O_CREAT) flags = flags | O_CREAT;
+   	if((oflag & O_CREAT) == O_CREAT) flags = flags | O_CREAT;
+    if((oflag & O_DIRECTORY) == O_DIRECTORY) flags =  O_DIRECTORY;
    	
    	// open/create a server-side file descriptor
 	int fd;
 	if((fd = open(path, oflag, mode)) == -1)
 	{
 		error_ = Error::Type::eserv;
+        std::cout<<"\nwell dang it\n";
 		logEndCustom(error_);
 		return -1;
 	}
@@ -290,13 +300,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	
 	// check if regular file and handle exceptions
    	if(S_ISREG(st.st_mode)) tp = Mode::Type::File;
-   	else if(S_ISDIR(st.st_mode))
-   	{
-   		error_ = Error::Type::eisdir;
-   		logEndCustom(error_);
-   		close(fd);
-   		return -1;
-   	}
+   	else if(S_ISDIR(st.st_mode)) tp = Mode::Type::Catalog;
    	else
    	{
    		error_ = Error::Type::eserv;

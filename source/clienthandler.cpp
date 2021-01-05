@@ -98,7 +98,7 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
     ret.retVal = api.mynfs_read(rec.fileDescriptor, buf, rec.length, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::READ);
-    Serialize::sendStruct(ret, sock, clientNum);
+    Serialize::sendStruct(ret, sock, clientNum); 
 
     Serialize retString(ret.retVal);
     retString.serializeString(buf, ret.retVal);
@@ -110,9 +110,14 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
 {
     API api;
     DefRecIntData rec;
-    DefRetIntSendData ret;
+    DefRetIntSendData ret, recOk;
     data.castBufferToStruct(rec);
-    // TODO wysłanie potwierdzenia, że przyjmiemy tyle bajtów
+    
+    recOk.retVal = rec.length;
+    recOk.errorID = 0;
+    recOk.operID = rec.operID;
+    Serialize::sendStruct(recOk, sock, clientNum);
+
     Deserialize retString(rec.length);
     retString.receiveData(sock, clientNum);
 
@@ -156,7 +161,7 @@ void ClientHandler::closeDir(Deserialize& data, FDManager& manager)
     RecDataOneLine rec;
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
-    ret.retVal = api.mynfs_closedir(rec.fileDescriptor);
+    ret.retVal = api.mynfs_closedir(rec.fileDescriptor, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSEDIR);
     Serialize::sendStruct(ret, sock, clientNum);
@@ -169,7 +174,7 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
 
-    char* buf = api.mynsf_readdir(rec.fileDescriptor);
+    char* buf = api.mynsf_readdir(rec.fileDescriptor, manager);
     ret.operID = static_cast<char>(ApiIDS::READDIR);
     ret.errorID = api.getError();
 
@@ -182,12 +187,21 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
 
     Serialize::sendStruct(ret, sock, clientNum);
 
-    if(buf != NULL){
-    Serialize retString(ret.retVal);
     // TODO odebranie potwierdzenia od klienta odnośnie przesłania danych
+    DefRetIntSendData recOk;
+    Deserialize::receiveStruct(recOk, sock, clientNum);
 
-    retString.serializeString(buf, ret.retVal);
-    retString.sendData(sock, clientNum);
+    if(buf != NULL)
+    {
+        Serialize retString(ret.retVal);
+    
+        if(recOk.retVal != strlen(buf))
+        {
+            ret.retVal = 0;
+        }
+
+        retString.serializeString(buf, ret.retVal);
+        retString.sendData(sock, clientNum);
     }    
 
     delete[] buf;
