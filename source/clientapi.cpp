@@ -124,25 +124,35 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
     }
 
     Client * client = clients[mynfs_fd];
+
     DefRecIntData sendData;
     sendData.operID = static_cast<char>(ApiIDS::WRITE);
     sendData.fileDescriptor = mynfs_fd;
     sendData.length = len;
+    logCustom("Sending struct");
     Serialize::sendStruct(sendData, *client);// wysylamy naglowek
+    logCustom("Struct send");
 
     // TODO sprawdzenie czy serwer przyjmie zgłoszenie na len bajtów
     Serialize sendStr(len);
     sendStr.serializeString(buf, len);
+    logCustom("Sending string: " + std::string(buf));
     sendStr.sendData(*client);// wysylamy dane do zapisu
+    logCustom("String send");
 
     DefRetIntSendData recData;
+    logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recData, *client);
+    logCustom("Struct received");
 
     if (recData.retVal == -1)
     {
         setErrno(recData.errorID);
+        logError("retVal in recData is -1. Fail");
+        return -1;
     }
 
+    logEndCustom("Pass");
     return recData.retVal;
 }
 
