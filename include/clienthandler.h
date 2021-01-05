@@ -50,8 +50,8 @@ private:
     void readFile(Deserialize& data, FDManager& manager);
     void writeFile(Deserialize& data, FDManager& manager);
     void lseekFile(Deserialize& data, FDManager& manager);
-    void closeFile(Deserialize& data, FDManager& manager);
-    void closeDir(Deserialize& data, FDManager& manager);
+    void closeFile(Deserialize& data, FDManager& manager, bool& run);
+    void closeDir(Deserialize& data, FDManager& manager, bool& run);
     void readDir(Deserialize& data, FDManager& manager);
     void fstatFile(Deserialize& data, FDManager& manager);
 };

@@ -56,6 +56,7 @@ public:
     bool exist(const std::string& path);
     FileDescriptor& get(int fd);
     FDVector get(const std::string& path);
+    bool empty() const;
 
 
 };

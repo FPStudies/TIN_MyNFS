@@ -82,3 +82,7 @@ FDManager::FDVector FDManager::get(const std::string& path){
     logEndCustom("Returned vector.");
     return ret;
 }
+
+bool FDManager::empty() const{
+    return fd_.empty();
+}

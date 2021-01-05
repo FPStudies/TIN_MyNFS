@@ -49,10 +49,10 @@ void ClientHandler::run()
                     lseekFile(data, fdManager);
                     break;
                 case ApiIDS::CLOSE:
-                    closeFile(data, fdManager);
+                    closeFile(data, fdManager, run);
                     break;
                 case ApiIDS::CLOSEDIR:
-                    closeDir(data, fdManager);
+                    closeDir(data, fdManager, run);
                     break;
                 case ApiIDS::READDIR:
                     readDir(data, fdManager);
@@ -150,7 +150,7 @@ void ClientHandler::lseekFile(Deserialize& data, FDManager& manager)
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
-void ClientHandler::closeFile(Deserialize& data, FDManager& manager)
+void ClientHandler::closeFile(Deserialize& data, FDManager& manager, bool& run)
 {
     API api;
     RecDataOneLine rec;
@@ -160,9 +160,15 @@ void ClientHandler::closeFile(Deserialize& data, FDManager& manager)
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSE);
     Serialize::sendStruct(ret, sock, clientNum);
+    
+    if(manager.empty()){
+        close(sock);
+        run = false;
+        logCustom("Zamknięto socket: " + sock);
+    }
 }
 
-void ClientHandler::closeDir(Deserialize& data, FDManager& manager)
+void ClientHandler::closeDir(Deserialize& data, FDManager& manager, bool& run)
 {
     API api;
     RecDataOneLine rec;
@@ -172,6 +178,12 @@ void ClientHandler::closeDir(Deserialize& data, FDManager& manager)
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSEDIR);
     Serialize::sendStruct(ret, sock, clientNum);
+
+    if(manager.empty()){
+        close(sock);
+        run = false;
+        logCustom("Zamknięto socket: " + sock);
+    }
 }
 
 void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO sprawdzić czy na pewno ok
