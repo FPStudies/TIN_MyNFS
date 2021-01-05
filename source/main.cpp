@@ -9,9 +9,9 @@ int main(){
     std::cout << "Hello world" << std::endl;
 
     ClientApi api;
-    auto fd = api.mynfs_open("192.168.0.23", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
+    auto fd = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
     char* mes = "Siemka";
-    api.mynfs_write(fd, mes, 7);
+   // api.mynfs_write(fd, mes, 7);
     auto res = api.mynfs_fstat(fd);
     std::cout<<res.nfs_st_size;
     api.mynfs_lseek(fd, SEEK_END, 0);

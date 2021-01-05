@@ -11,6 +11,11 @@
 
 #include "clientapi.h"
 
+int mynfs_errno = 0;
+
+
+
+
 ClientApi::ClientApi()
 {
 
@@ -20,7 +25,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
 {
     if(path == NULL || path == nullptr){
         std::cout << "Nie podano ścieżki" << std::endl;
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::enoent);
         return -1;
     }
 
@@ -29,7 +34,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     if (pathLength > 4096)
     {
         std::cout << "Za dluga sciezka" << std::endl;
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::enametoolong);
         return -1;
     }
 
@@ -71,8 +76,6 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     }
     std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
 
-    //int fd = 5; // To usunac pozniej. podany do testow
-    
     clients.insert(std::pair<int, Client*> (rec.retVal, client));
     return rec.retVal;
 }
@@ -81,9 +84,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 {
     if (!clientExist(mynfs_fd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return -1;
     }
 
@@ -115,9 +116,7 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
 {
     if (!clientExist(mynfs_fd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return -1;
     }
 
@@ -127,7 +126,7 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
     sendData.fileDescriptor = mynfs_fd;
     sendData.length = len;
     Serialize::sendStruct(sendData, *client);// wysylamy naglowek
-    
+
     // TODO sprawdzenie czy serwer przyjmie zgłoszenie na len bajtów
     Serialize sendStr(len);
     sendStr.serializeString(buf, len);
@@ -135,11 +134,12 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
 
     DefRetIntSendData recData;
     Deserialize::receiveStruct(recData, *client);
+
     if (recData.retVal == -1)
     {
         setErrno(recData.errorID);
     }
-    std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
+
     return recData.retVal;
 }
 
@@ -147,9 +147,7 @@ int ClientApi::mynfs_lseek(int mynfs_fd, int whence, int offset)
 {
     if (!clientExist(mynfs_fd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return -1;
     }
 
@@ -176,9 +174,7 @@ int ClientApi::mynfs_close(int mynfs_fd)
 {
     if (!clientExist(mynfs_fd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return -1;
     }
     
@@ -204,9 +200,7 @@ int ClientApi::mynfs_closedir(int dirfd)
 {
     if (!clientExist(dirfd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return -1;
     }
 
@@ -231,9 +225,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
 {
     if (!clientExist(dirfd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         return NULL;
     }
 
@@ -273,9 +265,7 @@ mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
     mynfs_stat mstat = {};
     if (!clientExist(mynfs_fd))
     {
-        // nie istnieje takie polaczenie <> nie istnieje deskryptor
-        // ustawic jakies errno o zlym deskryptorze
-        setErrno(0); // Podać prawidłowe errno
+        setErrno((int)MyNFS_ERRORS::ebadf);
         mstat.nfs_st_valid = false;
         std::cout<<"\nfstat nie dziala\n";
         return mstat;
@@ -304,7 +294,7 @@ mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
 
 void ClientApi::setErrno(int errorID)
 {
-    // TODO
+    mynfs_errno = errorID;
 }
 
 bool ClientApi::clientExist(int fd)
