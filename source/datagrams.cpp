@@ -119,6 +119,10 @@ size_t Datagram::getBufSize() const{
     return bufSize;
 }
 
+char * const Datagram::getBuffor() const{
+    return buffor;
+}
+
 ssize_t Deserialize::receiveData(const int socket, const int clientNumber){
     ssize_t readFlag;
     
