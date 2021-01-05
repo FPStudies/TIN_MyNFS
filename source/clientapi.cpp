@@ -17,7 +17,7 @@ bool isSockGood(int socket_fd){
     int error = 0;
     socklen_t len = sizeof (error);
     int retval = getsockopt (socket_fd, SOL_SOCKET, SO_ERROR, &error, &len);
-
+    std::cout << "DUPA: " << socket_fd << " " << retval << " " << error << std::endl;
     if (retval != 0) {
         /* there was a problem getting the error code */
         fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
@@ -71,10 +71,12 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         }
     } 
 
-    if(client != nullptr && !isSockGood(client->getSocket())){
-        std::cout << "Socket nie jest ważny v2\n";
-        setErrno(-1); // TODO
-        return -1;
+    if(client != nullptr){
+        if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
+        {
+            std::cout << "Socket nie jest ważny v2\n";
+            client = nullptr;
+        }
     }
 
     if (client == nullptr)
@@ -101,11 +103,11 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         setErrno(-1); // TODO
         return -1;
     }
+
     // TODO odebrać potwierdzenie
     Serialize sendPath(pathLength);
     sendPath.serializeString(path, pathLength);
     sendPath.sendData(*client);
-    
     DefRetIntSendData rec;
     Deserialize::receiveStruct(rec, *client);
     if (rec.retVal == -1)
