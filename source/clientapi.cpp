@@ -75,6 +75,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
         {
             std::cout << "Socket nie jest ważny v2\n";
+            delete client;
             client = nullptr;
         }
     }
