@@ -128,9 +128,18 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
     sendData.length = len;
     Serialize::sendStruct(sendData, *client);// wysylamy naglowek
     
+    DefRetIntSendData recOk;
+    Deserialize::receiveStruct(recOk, *client);
+    if (recOk.retVal != len)
+    {
+        setErrno(0);
+        return -1;
+    }
+
     // TODO sprawdzenie czy serwer przyjmie zgłoszenie na len bajtów
     Serialize sendStr(len);
     sendStr.serializeString(buf, len);
+
     sendStr.sendData(*client);// wysylamy dane do zapisu
 
     DefRetIntSendData recData;
@@ -246,7 +255,14 @@ char * ClientApi::mynfs_readdir(int dirfd)
     DefRetIntSendData recData;
     Deserialize::receiveStruct(recData, *client);
     // TODO wysłanie potwierdzenia wysłania takiej ilości bajtów
-    if (recData.errorID == 0)
+    
+    DefRetIntSendData recOk;
+    recOk.retVal = recData.retVal;
+    recOk.operID = recData.operID;
+    recOk.errorID = 0;
+    Serialize::sendStruct(recOk, *client);
+
+    if (recData.retVal > 0)
     {
         Deserialize recStr(recData.retVal);
         recStr.receiveData(*client);
@@ -258,6 +274,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
     }
     else
     {
+        std::cout<<"dang it";
         setErrno(recData.errorID);
         return NULL;
     }
