@@ -4,4 +4,5 @@ Program
 Test
 .vscode
 *.o
-*.a
+*.afile.txt
+file.txt
