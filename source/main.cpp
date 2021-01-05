@@ -1,10 +1,18 @@
 #include <iostream>
+#ifdef ENABLE_LOGS
 #include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+#endif
 #include "clientapi.h"
 
 int main(){
 
+    #ifdef ENABLE_LOGS
     spdlog::info("Welcome to spdlog!");
+    auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
+    spdlog::set_level(spdlog::level::debug);
+    #endif
+
 
     std::cout << "Hello world" << std::endl;
 

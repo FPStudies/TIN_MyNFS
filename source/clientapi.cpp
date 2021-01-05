@@ -23,6 +23,7 @@ ClientApi::ClientApi()
 
 int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
 {
+    logStart();
     if(path == NULL || path == nullptr){
         std::cout << "Nie podano ścieżki" << std::endl;
         setErrno((int)MyNFS_ERRORS::enoent);
@@ -82,6 +83,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
 
 int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 {
+    logStart();
     if (!clientExist(mynfs_fd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
@@ -114,6 +116,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 
 int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
 {
+    logStart();
     if (!clientExist(mynfs_fd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
@@ -145,9 +148,11 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
 
 int ClientApi::mynfs_lseek(int mynfs_fd, int whence, int offset)
 {
+    logStart();
     if (!clientExist(mynfs_fd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
+        logError("Client does not exist. Fail");
         return -1;
     }
 
@@ -157,21 +162,29 @@ int ClientApi::mynfs_lseek(int mynfs_fd, int whence, int offset)
     sendData.fileDescriptor = mynfs_fd;
     sendData.whence = whence;
     sendData.offset = offset;
+    logCustom("Sending struct");
     Serialize::sendStruct(sendData, *client);
+    logCustom("Struct send");
 
     DefRetIntSendData recData;
+    logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recData, *client);
+    logCustom("Struct received");
     if (recData.retVal == -1)
     {
         setErrno(recData.errorID);
+        logError("retVal in recData is -1. Fail");
+        return -1;
     }
     std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
 
+    logEndCustom("Pass");
     return recData.retVal;
 }
 
 int ClientApi::mynfs_close(int mynfs_fd)
 {
+    logStart();
     if (!clientExist(mynfs_fd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
@@ -198,6 +211,7 @@ int ClientApi::mynfs_close(int mynfs_fd)
 
 int ClientApi::mynfs_closedir(int dirfd)
 {
+    logStart();
     if (!clientExist(dirfd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
@@ -223,6 +237,7 @@ int ClientApi::mynfs_closedir(int dirfd)
 
 char * ClientApi::mynfs_readdir(int dirfd)
 {
+    logStart();
     if (!clientExist(dirfd))
     {
         setErrno((int)MyNFS_ERRORS::ebadf);
@@ -257,11 +272,13 @@ char * ClientApi::mynfs_readdir(int dirfd)
 
 int ClientApi::mynfs_opendir(char *host, char *path)
 {
+    logStart();
     return mynfs_open(host, path, O_DIRECTORY, 0);
 }
 
 mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
 {
+    logStart();
     mynfs_stat mstat = {};
     if (!clientExist(mynfs_fd))
     {

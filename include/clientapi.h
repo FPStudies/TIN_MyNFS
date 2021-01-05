@@ -17,6 +17,7 @@
 #include <string>
 #include "clientprotocol.h"
 #include "datagrams.h"
+#include "LogUtils.h"
 
 extern int mynfs_errno;
 
