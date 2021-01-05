@@ -97,6 +97,8 @@ public:
     void castBufferToStruct(Data& structure) const{
         memcpy(&structure, buffor, sizeof(Data));
     }
+
+    char * const getBuffor() const;
 };
 
 class Deserialize: public Datagram

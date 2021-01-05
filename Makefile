@@ -1,5 +1,8 @@
 .PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs
 
+#/**
+#* @author Mateusz Kordowski
+#*/
 
 CPP_FILES = $(wildcard source/*.cpp)
 BINARIES = $(wildcard source/*.o)

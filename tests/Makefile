@@ -1,5 +1,9 @@
+
 .PHONY: clean compile
 
+#/**
+#* @author Mateusz Kordowski
+#*/
 
 SOURCE = $(wildcard *.cpp)
 BINARIES = $(wildcard *.o)

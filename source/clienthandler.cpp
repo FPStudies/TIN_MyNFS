@@ -108,6 +108,7 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
 
 void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
 {
+    logStart();
     API api;
     DefRecIntData rec;
     DefRetIntSendData ret, recOk;
@@ -119,15 +120,21 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     Serialize::sendStruct(recOk, sock, clientNum);
 
     Deserialize retString(rec.length);
+    logCustom("Waiting to receive string");
     retString.receiveData(sock, clientNum);
+    logCustom("String received: " + std::string(retString.getBuffor()));
 
     char* toWrite = new char[rec.length];
     retString.deserializeString(toWrite, rec.length);
+    logCustom("Deserialized string: " + std::string(toWrite));
     ret.retVal = api.mynfs_write(rec.fileDescriptor, toWrite, rec.length, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::WRITE);
+    logCustom("Sending struct");
     Serialize::sendStruct(ret, sock, clientNum);
+    logCustom("Struct send");
 
+    logEndCustom("Pass");
     delete[] toWrite;
 }
 
