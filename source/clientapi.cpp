@@ -71,10 +71,10 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     }
     std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
 
-    int fd = 5; // To usunac pozniej. podany do testow
+    //int fd = 5; // To usunac pozniej. podany do testow
     
-    clients.insert(std::pair<int, Client*> (fd, client));
-    return fd;
+    clients.insert(std::pair<int, Client*> (rec.retVal, client));
+    return rec.retVal;
 }
 
 int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
@@ -266,6 +266,40 @@ char * ClientApi::mynfs_readdir(int dirfd)
 int ClientApi::mynfs_opendir(char *host, char *path)
 {
     return mynfs_open(host, path, O_DIRECTORY, 0);
+}
+
+mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
+{
+    mynfs_stat mstat = {};
+    if (!clientExist(mynfs_fd))
+    {
+        // nie istnieje takie polaczenie <> nie istnieje deskryptor
+        // ustawic jakies errno o zlym deskryptorze
+        setErrno(0); // Podać prawidłowe errno
+        mstat.nfs_st_valid = false;
+        std::cout<<"\nfstat nie dziala\n";
+        return mstat;
+    }
+
+    Client * client = clients[mynfs_fd];
+    RecDataOneLine sendData;
+    sendData.operID = static_cast<char>(ApiIDS::FSTAT);
+    sendData.fileDescriptor = mynfs_fd;
+    Serialize::sendStruct(sendData, *client);
+
+    fstatRetData recData;
+    Deserialize::receiveStruct(recData, *client);
+    if(recData.nfs_st_valid == false)
+    {
+        setErrno(recData.errorID);
+    }
+
+    mstat.nfs_st_valid = recData.nfs_st_valid;
+    mstat.nfs_st_size = recData.nfs_st_size;
+    mstat.nfs_st_atime = recData.nfs_st_atime;
+    mstat.nfs_st_mtime = recData.nfs_st_mtime;
+
+    return mstat;
 }
 
 void ClientApi::setErrno(int errorID)

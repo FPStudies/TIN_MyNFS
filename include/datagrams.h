@@ -54,6 +54,16 @@ struct RecDataCloseDir{
     short int fileDescriptor;
 };
 
+struct fstatRetData
+{
+    char operID;
+    char errorID;
+	bool nfs_st_valid;		
+	int  nfs_st_size;	    
+	int  nfs_st_atime;	    
+	int  nfs_st_mtime;		
+};
+
 struct RecDataOneLine{
     char operID;
     short int fileDescriptor;
