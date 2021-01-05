@@ -5,15 +5,19 @@
 
 #include "IDGen.h"
 
-IDGen::IDGen(const ID& startValue)
-: values_(), nextPossibleValue_(startValue > 0 ? startValue : throw std::runtime_error("Wrong start value in IDGen"))
+IDGen::IDGen(const ID& startValue, const ID& maxValue)
+: values_(), 
+nextPossibleValue_(startValue >= 0 && startValue < INT32_MAX - 1 ? startValue : throw std::runtime_error("Wrong start value in IDGen")), 
+startVal_(startValue), 
+endVal_(maxValue > 0 && maxValue < INT32_MAX ? maxValue : throw std::runtime_error("Wrong max value in IDGen"))
 {}
 
 bool IDGen::isIdBad(ID id) const{
-    if(id <= 0)
+    if(id < startVal_ || id > endVal_)
         return true;
     return false;
 }
+
 
 IDGen::ID IDGen::get(){
     logStart();
@@ -22,9 +26,14 @@ IDGen::ID IDGen::get(){
 
     bool notFound = true;
     while(notFound){
+        if(values_.size() == endVal_ - startVal_){
+            ret = INT32_MIN;
+            notFound = false;
+            break;
+        }
         if(nextPossibleValue_ < INT32_MAX)
             ++nextPossibleValue_;
-        else nextPossibleValue_ = 0;
+        else nextPossibleValue_ = startVal_;
 
         if(values_.find(nextPossibleValue_) == values_.end()){
             notFound = false;
@@ -58,4 +67,34 @@ bool IDGen::dispose(const ID& id){
     values_.erase(it);
     logEndCustom("Was erased id: " + std::to_string(id));
     return true;
+}
+
+size_t IDGen::size() const{
+    return values_.size();
+}
+
+
+IDGenMonitor::IDGenMonitor(const ID& startValue, const ID& maxValue)
+: IDGen(startValue, maxValue)
+{}
+
+IDGenMonitor::ID IDGenMonitor::get(){
+    const std::lock_guard<std::mutex> lock(monitor_);
+    return IDGen::get();
+}
+
+bool IDGenMonitor::exist(const ID& id) const{
+    const std::lock_guard<std::mutex> lock(monitor_);
+    return IDGen::exist(id);
+}
+
+bool IDGenMonitor::dispose(const ID& id){
+    const std::lock_guard<std::mutex> lock(monitor_);
+    return IDGen::dispose(id);
+
+}
+
+size_t IDGenMonitor::size() const{
+    const std::lock_guard<std::mutex> lock(monitor_);
+    return IDGen::size();
 }

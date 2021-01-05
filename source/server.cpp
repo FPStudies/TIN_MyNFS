@@ -16,17 +16,23 @@
 
 class ClientHandler;
 
+ThreadStruct::ThreadStruct(int sock, const int& threadID, IDGenMonitor& gen)
+: sock(sock), threadIDGen(gen), threadID(threadID)
+{}
+
 void *clientThread(void *arg)
 {
     static int clientNums = 1;
-    int sock = *((int *) arg);
-    std::cout << "Utworzono watek klienta nr " << clientNums << ", socket " << sock << std::endl;
-    ClientHandler handler(clientNums++, sock);
+    ThreadStruct* threadStruct = static_cast<ThreadStruct*>(arg);
+    std::cout << "Utworzono watek klienta nr " << clientNums << ", socket " << threadStruct->sock << std::endl;
+    ClientHandler handler(clientNums++, threadStruct->sock);
 
     handler.run();
 
-	close(sock);
-    std::cout << "Zamknieto socket " << sock << std::endl;
+	close(threadStruct->sock);
+    threadStruct->threadIDGen.dispose(threadStruct->sock);
+    std::cout << "Zamknieto socket " << threadStruct->sock << std::endl;
+    delete threadStruct;
 	pthread_exit(NULL);
 }
 
@@ -85,8 +91,23 @@ void Server::setListen()
 void Server::connectLoop()
 {
     pthread_t tid[MAX_USER];
+    IDGenMonitor generator(0, 40);
 
-    int sock;
+    while(true){
+        int sock;
+        auto threadID = generator.get();
+        sock = createUserSocket();
+        ThreadStruct* theradArg = new ThreadStruct(sock, threadID, generator);
+        std::cout << "Pojawil sie nowy klient. Socket nr " << sock << std::endl;
+
+        std::cout << "Gen size: " << generator.size() << std::endl;
+        if (threadID == INT32_MIN || pthread_create(&tid[threadID], NULL, clientThread, theradArg) != 0)
+        {
+            std::cout << "Nie udalo sie utworzyc watku" << std::endl;
+            exit(1);
+        }
+    }
+    /*int sock;
     for (int i = 0; i < MAX_USER; i++)
     {
         sock = createUserSocket();
@@ -98,8 +119,9 @@ void Server::connectLoop()
             std::cout << "Nie udalo sie utworzyc watku" << std::endl;
             exit(1);
         }
+        close(sock);
 
-    }
+    }*/
 
     for (int i = 0; i < MAX_USER; i++)
 	{

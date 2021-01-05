@@ -162,9 +162,8 @@ void ClientHandler::closeFile(Deserialize& data, FDManager& manager, bool& run)
     Serialize::sendStruct(ret, sock, clientNum);
     
     if(manager.empty()){
-        close(sock);
         run = false;
-        logCustom("Zamknięto socket: " + sock);
+        logEndCustom("Zamknięto socket: " + std::to_string(sock));
     }
 }
 
@@ -180,9 +179,8 @@ void ClientHandler::closeDir(Deserialize& data, FDManager& manager, bool& run)
     Serialize::sendStruct(ret, sock, clientNum);
 
     if(manager.empty()){
-        close(sock);
         run = false;
-        logCustom("Zamknięto socket: " + sock);
+        logEndCustom("Zamknięto socket: " + std::to_string(sock));
     }
 }
 

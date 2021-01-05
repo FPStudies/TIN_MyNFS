@@ -119,7 +119,7 @@ size_t Datagram::getBufSize() const{
     return bufSize;
 }
 
-char * const Datagram::getBuffor() const{
+const char * const Datagram::getBuffor() const{
     return buffor;
 }
 

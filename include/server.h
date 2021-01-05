@@ -11,6 +11,7 @@
  #pragma once
 #include <sys/types.h>
 #include <netinet/in.h>
+#include "IDGen.h"
 
 void *clientThread(void *arg);
 
@@ -31,4 +32,12 @@ private:
     void setListen();
     void connectLoop();
     int createUserSocket();
+};
+
+struct ThreadStruct{
+    int sock;
+    IDGenMonitor& threadIDGen;
+    int threadID;
+
+    ThreadStruct(int sock, const int& threadID, IDGenMonitor& gen);
 };

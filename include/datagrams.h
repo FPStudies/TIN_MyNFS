@@ -98,7 +98,7 @@ public:
         memcpy(&structure, buffor, sizeof(Data));
     }
 
-    char * const getBuffor() const;
+    const char * const getBuffor() const;
 };
 
 class Deserialize: public Datagram
