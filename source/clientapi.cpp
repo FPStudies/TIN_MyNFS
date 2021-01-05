@@ -13,6 +13,25 @@
 
 int mynfs_errno = 0;
 
+bool isSockGood(int socket_fd){
+    int error = 0;
+    socklen_t len = sizeof (error);
+    int retval = getsockopt (socket_fd, SOL_SOCKET, SO_ERROR, &error, &len);
+
+    if (retval != 0) {
+        /* there was a problem getting the error code */
+        fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+        return false;
+    }
+
+    if (error != 0) {
+        /* socket has a non zero error status */
+        fprintf(stderr, "socket error: %s\n", strerror(error));
+        return false;
+    }
+
+    return true;
+}
 
 
 
@@ -46,24 +65,42 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     {
         if (strcmp(val->getAddress(), host) == 0)
         {
+            std::cout << "Znaleziono socket\n";
             client = clients[key];
             break;
         }
     } 
 
+    if(client != nullptr && !isSockGood(client->getSocket())){
+        std::cout << "Socket nie jest ważny v2\n";
+        setErrno(-1); // TODO
+        return -1;
+    }
+
     if (client == nullptr)
     {
+        std::cout << "Otwieram nowy socket\n";
         // otwiweramy nowe
         client = new Client(host);
         client->startConnection();
     }
+    
     OpenFileRecData sendData;
     sendData.operID = static_cast<char>(ApiIDS::OPEN);
     sendData.fileDescriptor = 0;
     sendData.oflag = oflag;
     sendData.mode = mode;
     sendData.pathLength = pathLength;
-    Serialize::sendStruct(sendData, *client);
+    auto tmp = Serialize::sendStruct(sendData, *client);
+    if(tmp == -1){
+        int error_code;
+        int error_code_size = sizeof(error_code);
+        //getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+
+        std::cout << "Socket nie jest ważny\n";
+        setErrno(-1); // TODO
+        return -1;
+    }
     // TODO odebrać potwierdzenie
     Serialize sendPath(pathLength);
     sendPath.serializeString(path, pathLength);
