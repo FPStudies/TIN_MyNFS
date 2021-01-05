@@ -9,7 +9,7 @@ FDManager::Container::Container(FileDescriptor&& fileDescriptor)
 : id(fileDescriptor.getIDConst()), path(fileDescriptor.getPath()), fd(std::move(fileDescriptor))
 {}
 
-bool FDManager::add(FileDescriptor&& fileDescriptor){
+bool FDManager::add(FileDescriptor& fileDescriptor){
     logStart();
     auto& index = fd_.get<IndexById>();
     if(index.find(fileDescriptor.getID()) != index.end()) {

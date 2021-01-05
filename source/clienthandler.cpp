@@ -56,7 +56,10 @@ void ClientHandler::run()
                     break;
                 case ApiIDS::READDIR:
                     readDir(data, fdManager);
-                    break;       
+                    break;
+                case ApiIDS::FSTAT:
+                    fstatFile(data, fdManager);
+                    break;        
                 default:
                     std::cout << "nieznana operacja\n"; // TODO         
             }
@@ -69,7 +72,7 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     API api;
     OpenFileRecData received;
     data.castBufferToStruct(received);
-
+ 
     Deserialize retString(received.pathLength);
     retString.receiveData(sock, clientNum);
     char* path = new char[received.pathLength];
@@ -188,5 +191,25 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
     }    
 
     delete[] buf;
+}
+
+void ClientHandler::fstatFile(Deserialize& data, FDManager& manager)
+{
+    API api;
+    RecDataOneLine rec;
+    fstatRetData ret;
+    data.castBufferToStruct(rec);
+    
+    mynfs_stat my_stat = api.mynfs_fstat(rec.fileDescriptor, manager);
+
+    ret.operID = static_cast<char>(ApiIDS::FSTAT);
+    ret.errorID = api.getError();
+
+    ret.nfs_st_valid = my_stat.nfs_st_valid;
+    ret.nfs_st_size = my_stat.nfs_st_size;
+    ret.nfs_st_atime = my_stat.nfs_st_atime;
+    ret.nfs_st_mtime = my_stat.nfs_st_mtime;
+
+    Serialize::sendStruct(ret, sock, clientNum);
 }
 

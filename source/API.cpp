@@ -307,6 +307,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 	
 	Mode md(op, tp);
 	FileDescriptor fileDes(gen, 0, md, path, fd);
+    manager.add(fileDes);
 	logEndCustom("Pass");
 	return fileDes.getID();
 }
@@ -322,6 +323,7 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         fileStat.nfs_st_valid = false;
+        std::cout<<"\nfstat nie dziala\n";
         return fileStat;
     }
     
@@ -420,6 +422,7 @@ int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
         return -1;
     }
     if(!manager.exist(mynfs_fd)) {
+        std::cout<<"lipa";
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         return -1;

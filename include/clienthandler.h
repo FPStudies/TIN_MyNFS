@@ -53,4 +53,5 @@ private:
     void closeFile(Deserialize& data, FDManager& manager);
     void closeDir(Deserialize& data, FDManager& manager);
     void readDir(Deserialize& data, FDManager& manager);
+    void fstatFile(Deserialize& data, FDManager& manager);
 };
