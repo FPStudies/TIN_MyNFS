@@ -47,6 +47,7 @@ private:
     int sock;
 
     void openFile(Deserialize& data, FDManager& manager, IDGen& gen);
+    void openDir(Deserialize& data, FDManager& manager, IDGen& gen);
     void readFile(Deserialize& data, FDManager& manager);
     void writeFile(Deserialize& data, FDManager& manager);
     void lseekFile(Deserialize& data, FDManager& manager);
