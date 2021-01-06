@@ -151,3 +151,44 @@ ssize_t Serialize::sendData(const Client& client)
         std::cout << "Wyslano wiadomosc" << std::endl;
     }
 }
+
+
+OpenFileRecData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor) + "\noflag:\t" + std::to_string(oflag) + \
+    "\nmode:\t" + std::to_string(mode) + "\npathLength:\t" + std::to_string(pathLength);
+}
+
+ReadFileRecData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor) + "\nlength:\t" + std::to_string(length);
+}
+
+DefRecIntData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor) + "\nlength:\t" + std::to_string(length);
+}
+
+LseekRecData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor) + "\nwhence:\t" + std::to_string(whence) + \
+    "\noffset:\t" + std::to_string(offset);
+}
+
+CloseRecData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor);
+}
+
+RecDataCloseDir::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor);
+}
+
+fstatRetData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nerrorID:\t" + std::to_string(errorID) + "\nnfs_st_valid:\t" + std::to_string(nfs_st_valid) + \
+    "\nnfs_st_size:\t" + std::to_string(nfs_st_size) + "\nnfs_st_atime:\t" + std::to_string(nfs_st_atime) + "\nnfs_st_mtime:\t" + std::to_string(nfs_st_mtime) +\
+    "\nnfs_is_dir\t" + std::to_string(nfs_is_dir);
+}
+
+RecDataOneLine::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor);
+}
+
+DefRetIntSendData::operator std::string(){
+    return "\noperID:\t" + std::to_string(operID) + "\nerrorID:\t" + std::to_string(errorID) + "\nretVal:\t" + std::to_string(retVal);
+}
