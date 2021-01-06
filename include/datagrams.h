@@ -18,6 +18,7 @@
 
 struct OpenFileRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int oflag;
     int mode;
@@ -29,6 +30,7 @@ struct OpenFileRecData{
 
 struct ReadFileRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int length;
 
@@ -38,6 +40,7 @@ struct ReadFileRecData{
 
 struct DefRecIntData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int length;
 
@@ -48,6 +51,7 @@ struct DefRecIntData{
 
 struct LseekRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int whence;
     int offset;
@@ -58,6 +62,7 @@ struct LseekRecData{
 
 struct CloseRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
 
     CloseRecData();
@@ -67,6 +72,7 @@ struct CloseRecData{
 
 struct RecDataCloseDir{
     char operID;
+    char padding1;
     short int fileDescriptor;
 
     RecDataCloseDir();
@@ -79,7 +85,8 @@ struct fstatRetData
 {
     char operID;
     char errorID;
-	bool nfs_st_valid;		
+	bool nfs_st_valid;
+    char padding1;		
 	int  nfs_st_size;	    
 	int  nfs_st_atime;	    
 	int  nfs_st_mtime;	
@@ -91,6 +98,7 @@ struct fstatRetData
 
 struct RecDataOneLine{
     char operID;
+    char padding1;
     short int fileDescriptor;
 
     RecDataOneLine();
@@ -101,6 +109,8 @@ struct RecDataOneLine{
 struct DefRetIntSendData{
     char operID;
     char errorID;
+    char padding1;
+    char padding2;
     int retVal;
 
     DefRetIntSendData();

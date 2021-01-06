@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <ctime>
 #include <chrono>
-#include <thread>
+#include  <signal.h>
 #include "clienthandler.h"
 
 
@@ -34,6 +34,7 @@ public:
     static const std::string MAIN_LOG_NAME;
     static const int SERVER_THREAD_ID = -1;
 
+    static int socket_id;
 private:    
     int connectSocket = -1;
     struct sockaddr_in serverAddr;

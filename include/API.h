@@ -2,7 +2,7 @@
 #ifndef API_H
 #define API_H
 /**
- * @author Mateusz Kordowski
+ * @author Mateusz Kordowski, Maciej Adamski
  * 
  */
 

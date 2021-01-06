@@ -14,21 +14,46 @@ class ClientHandler;
 #include "server.h"
 
 const std::string Server::MAIN_LOG_NAME("mainThread");
+int Server::socket_id = -1;
 
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
+void INThandler(int sig)
+{
+    if(Server::socket_id != -1)
+        close(Server::socket_id);
+}
+
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
 ThreadStruct::ThreadStruct(int sock, const int& threadID, IDGenMonitor& gen)
 : sock(sock), threadIDGen(gen), threadID(threadID)
 {}
 #ifdef ENABLE_LOGS
 std::shared_ptr<spdlog::logger> createLogger(int threadID, int sock, int clientNums){
     auto currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    auto logger = spdlog::get(logName(threadID)); // sprawdzam czy istnieje
+
     // usuńcie środkową linię aby nie podawało daty do nazwy pliku.
-    auto logger = spdlog::basic_logger_mt<spdlog::async_factory>(logName(threadID), "logs/thread_" + std::to_string(threadID) \
-    /*+ "_" + std::string(std::ctime(&currentTime))*/ \
-    + ".txt");
+    if(logger == nullptr){
+        logger = spdlog::basic_logger_mt<spdlog::async_factory>(logName(threadID), "logs/thread_" + std::to_string(threadID) \
+        /*+ "_" + std::string(std::ctime(&currentTime))*/ \
+        + ".txt");
+    }
+    
     logger->info("Utworzono watek klienta nr " + std::to_string(clientNums) + ", socket " + std::to_string(sock));
     return logger;
 }
 #endif
+
+/**
+ * @author Mateusz Kordowski, Maciej Adamski
+ * 
+ */
 void *clientThread(void *arg)
 {
     static int clientNums = 1;
@@ -50,13 +75,19 @@ void *clientThread(void *arg)
     logger->info("Zamknieto socket " + std::to_string(threadStruct->sock) + " Thread ID: " + std::to_string(threadStruct->threadID));
     #endif
     threadStruct->threadIDGen.dispose(threadStruct->threadID);
-    tid.remove(threadStruct->threadID);
     delete threadStruct;
 	pthread_exit(NULL);
 }
 
+
+/**
+ * @author Mateusz Kordowski, Maciej Adamski
+ * 
+ */
 void Server::run()
 {
+    signal(SIGINT, INThandler);
+
     #ifdef ENABLE_LOGS
     spdlog::flush_on(spdlog::level::info);  // 
     spdlog::flush_on(spdlog::level::debug);  // aby podczas ctrl ^ c zapisało logi do plików. 
@@ -80,6 +111,10 @@ void Server::run()
     connectLoop();
 }
 
+/**
+ * @author Maciej Adamski
+ * 
+ */
 void Server::createConnectSocket()
 {
     connectSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -88,8 +123,13 @@ void Server::createConnectSocket()
         logInfoKnownThreadName(Server::MAIN_LOG_NAME, "Nie utworzono socketu");
 		exit(1);
 	}
+    Server::socket_id = connectSocket;
 }
 
+/**
+ * @author Maciej Adamski
+ * 
+ */
 void Server::bindPort()
 {
     int portOption = 1;
@@ -100,6 +140,10 @@ void Server::bindPort()
 	}
 }
 
+/**
+ * @author Maciej Adamski
+ * 
+ */
 void Server::bindSocket()
 {
     if (bind(connectSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == -1)
@@ -109,6 +153,10 @@ void Server::bindSocket()
 	}
 }
 
+/**
+ * @author Maciej Adamski
+ * 
+ */
 void Server::setListen()
 {
     if (listen(connectSocket, MAX_USER) == -1)
@@ -118,6 +166,10 @@ void Server::setListen()
     }
 }
 
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
 void Server::connectLoop()
 {
     const int max = MAX_USER;
@@ -144,27 +196,16 @@ void Server::connectLoop()
         }
         usedThreadID.insert(threadID);
     }
-    /*int sock;
-    for (int i = 0; i < MAX_USER; i++)
-    {
-        sock = createUserSocket();
-
-        std::cout << "Pojawil sie nowy klient. Socket nr " << sock << std::endl;
-
-        if (pthread_create(&tid[i], NULL, clientThread, &sock) != 0)
-        {
-            std::cout << "Nie udalo sie utworzyc watku" << std::endl;
-            exit(1);
-        }
-        close(sock);
-
-    }*/
 
     for(auto it : usedThreadID){
         pthread_join(tid[it], NULL);
     }
 }
 
+/**
+ * @author Maciej Adamski
+ * 
+ */
 int Server::createUserSocket()
 {
     int sock;

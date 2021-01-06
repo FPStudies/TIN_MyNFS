@@ -95,7 +95,7 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     ret.retVal = api.mynfs_open(path, received.oflag, manager, gen, received.mode);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPEN);
-    std::cout << ret.retVal << " " << (int)ret.errorID << " " << (int)ret.operID << " " << sock << " " << clientNum << std::endl;
+    //std::cout << ret.retVal << " " << (int)ret.errorID << " " << (int)ret.operID << " " << sock << " " << clientNum << std::endl;
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 

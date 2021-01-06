@@ -7,7 +7,7 @@
 SOURCE = $(wildcard *.cpp)
 BINARIES = $(wildcard *.o)
 OUT_NAME = ../Program
-FLAGS = -Wall -g -Wextra -pedantic -pthread -std=c++17
+FLAGS = -Wall -g -Wextra -pedantic -pthread -std=c++17 -O0
 
 SPDLOG_LIB = -l../external/spdlog/build/spdlog
 SPDLOG_INCLUDE = -I../external/spdlog/include
