@@ -73,6 +73,10 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
 
 }
 
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
 int API::mynfs_close(int fd, FDManager& manager){
     logStart();
     if(!manager.exist(fd)) {
@@ -98,6 +102,10 @@ int API::mynfs_close(int fd, FDManager& manager){
     return 0;
 }
 
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
 int API::mynfs_unlink(char* path, FDManager& manager){
     logStart();
     if(!checkPathLength(path)){
