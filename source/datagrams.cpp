@@ -181,7 +181,7 @@ RecDataCloseDir::RecDataCloseDir()
 {}
 
 fstatRetData::fstatRetData()
-: operID(CHAR_MIN), errorID(CHAR_MIN), nfs_st_valid(false), padding1(CHAR_MIN), nfs_st_size(INT32_MIN), nfs_st_atime(INT32_MIN), nfs_st_mtime(INT32_MIN)
+: operID(CHAR_MIN), errorID(CHAR_MIN), nfs_st_valid(false), nfs_is_dir(false), nfs_st_size(INT32_MIN), nfs_st_atime(INT32_MIN), nfs_st_mtime(INT32_MIN)
 {}	
 
 RecDataOneLine::RecDataOneLine()
@@ -220,7 +220,8 @@ RecDataCloseDir::operator std::string(){
 
 fstatRetData::operator std::string(){
     return "\noperID:\t" + std::to_string(operID) + "\nerrorID:\t" + std::to_string(errorID) + "\nnfs_st_valid:\t" + std::to_string(nfs_st_valid) + \
-    "\nnfs_st_size:\t" + std::to_string(nfs_st_size) + "\nnfs_st_atime:\t" + std::to_string(nfs_st_atime) + "\nnfs_st_mtime:\t" + std::to_string(nfs_st_mtime);
+    "\nnfs_st_size:\t" + std::to_string(nfs_st_size) + "\nnfs_st_atime:\t" + std::to_string(nfs_st_atime) + "\nnfs_st_mtime:\t" + std::to_string(nfs_st_mtime) +\
+    "\nnfs_is_dir\t" + std::to_string(nfs_is_dir);
 }
 
 RecDataOneLine::operator std::string(){

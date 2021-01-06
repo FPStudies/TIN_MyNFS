@@ -86,7 +86,7 @@ struct fstatRetData
     char operID;
     char errorID;
 	bool nfs_st_valid;
-    char padding1;		
+    bool nfs_is_dir;		
 	int  nfs_st_size;	    
 	int  nfs_st_atime;	    
 	int  nfs_st_mtime;	

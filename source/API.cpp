@@ -416,7 +416,8 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
 	fileStat.nfs_st_size = (int32_t)st.st_size; 
 	fileStat.nfs_st_atime = (int32_t)st.st_atime; 
 	fileStat.nfs_st_mtime = (int32_t)st.st_mtime;
-	
+    fileStat.nfs_is_dir = fileDes.isDirectory();
+
 	logEndCustom("Pass");
 	return fileStat;
 } 
