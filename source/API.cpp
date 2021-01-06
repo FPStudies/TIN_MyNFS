@@ -37,12 +37,6 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
         logEndCustom(error_);
         return -1;
     }
-    auto type = toSeek(whence);
-    if(type == Seek::ERROR) {
-        error_ = Error::Type::einval;
-        logEndCustom(error_);
-        return -1;
-    }
 
     auto& fdObject = manager.get(fd);
     if(!fdObject.isFile()){
@@ -53,18 +47,18 @@ int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
 
     auto tmp = fdObject.getfd();
     int ret = 0;
-    switch(type){
-        case Seek::Set:
+    switch(whence){ // miał być własny ale jest systemowy
+        case SEEK_SET:
             ret = lseek(tmp, offset, SEEK_SET);
             break;
-        case Seek::Cur:
+        case SEEK_CUR:
             ret = lseek(tmp, offset, SEEK_CUR);
             break;
-        case Seek::End:
+        case SEEK_END:
             ret = lseek(tmp, offset, SEEK_END);
             break;
         default:
-            error_ = Error::Type::eserv;
+            error_ = Error::Type::einval;
             logEndCustom(error_);
             return -1;
     }
