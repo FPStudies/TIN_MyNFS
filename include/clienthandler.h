@@ -21,6 +21,7 @@
 
 #include "datagrams.h"
 #include "API.h"
+#include "LogUtils.h"
 
 enum class ApiIDS: char
 {

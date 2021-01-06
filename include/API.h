@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 
 struct mynfs_stat
 {
@@ -78,6 +79,7 @@ struct API{
 
 private:
     Error error_;
+    char workDir[PATH_MAX];
 
     /**
      * @brief Sprawdza czy długość ścieżki mieści się w limicie.

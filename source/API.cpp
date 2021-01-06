@@ -3,7 +3,15 @@
 
 API::API()
 : error_(Error::Type::NONE)
-{}
+{
+    if(getcwd(workDir, sizeof(workDir)) == NULL)
+    {
+        perror("API constructor failed because of getcwd");
+        exit(1);
+    }
+    strcat(workDir, "/server");
+    std::cout<<workDir<<std::endl;
+}
 
 API::Seek API::toSeek(int error){
     switch(error){
@@ -144,19 +152,23 @@ int API::mynfs_unlink(char* path, FDManager& manager){
     return 0;
 }
 
-// Te funkcje działają dobrze na fileDesrciptor systemowym z funkcji open zwykłej bo sprawdzałem różne możliwości
+// Te funkcje działają dobrze na fileDesrciptor  z funkcji open zwykłej bo sprawdzałem różne możliwości
 // Wiec wystarczy, że podepniesz pod ten swój FD co tam pisałeś
 
 
 int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 {
     logStart();
+    char osPath[PATH_MAX];
+    memcpy(osPath, workDir, strlen(workDir) + 1);
+    strcat(osPath, path);
+
     struct stat st = {};
-    auto temp = stat(path, &st);
+    auto temp = stat(osPath, &st);
 
     if(temp == -1)
     {
-        temp = mkdir(path, mode);
+        temp = mkdir(osPath, mode);
         if( temp != 0)
         {
             error_ = Error::Type::ebadf;
@@ -168,7 +180,7 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
     //     error_ = Error::Type::enotdir;
     //     return -1;
     // }
-    auto dir = opendir(path);
+    auto dir = opendir(osPath);
     if (dir == NULL)
     {
         error_ = Error::Type::eserv;
@@ -177,7 +189,7 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 
     Mode md(Mode::Operation::Read, Mode::Type::Catalog);
 
-    FileDescriptor dirDes(gen, 0, md, path, -1, dir);
+    FileDescriptor dirDes(gen, 0, md, osPath, -1, dir);
     int ret = dirDes.getID();
     manager.add(std::move(dirDes));
     logEndCustom("Pass");
@@ -290,6 +302,10 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 {
 	logStart();
 	
+    char osPath[PATH_MAX];
+    memcpy(osPath, workDir, strlen(workDir) + 1);
+    strcat(osPath, path);
+
    	Mode::Operation op;
    	Mode::Type tp;
    	
@@ -328,7 +344,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	
    	// open/create a server-side file descriptor
 	int fd;
-	if((fd = open(path, oflag, mode)) == -1)
+	if((fd = open(osPath, oflag, mode)) == -1)
 	{
 		error_ = Error::Type::eserv;
         logInfo("well dang it");
@@ -338,7 +354,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	
    	// gather info about the file associated with the descriptor
 	struct stat st={};
-   	stat(path, &st);
+   	stat(osPath, &st);
    	
 	// check if regular file and handle exceptions
    	if(S_ISREG(st.st_mode)) tp = Mode::Type::File;
@@ -352,7 +368,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	}
 	
 	Mode md(op, tp);
-	FileDescriptor fileDes(gen, 0, md, path, fd);
+	FileDescriptor fileDes(gen, 0, md, osPath, fd);
     int ret = fileDes.getID();
     manager.add(std::move(fileDes));
 	logEndCustom("Pass");

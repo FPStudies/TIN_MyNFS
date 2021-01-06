@@ -37,6 +37,7 @@ public:
 private:    
     int connectSocket = -1;
     struct sockaddr_in serverAddr;
+    char* workDir;
 
     void createConnectSocket();
     void bindPort();
