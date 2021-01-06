@@ -106,11 +106,22 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     }
 
     // TODO odebrać potwierdzenie
+    DefRecIntData recOk;
+    Deserialize::receiveStruct(recOk, *client);
+    if(recOk.length != pathLength)
+    {
+        setErrno(-1); // TODO
+        return -1;
+    }
+    
     Serialize sendPath(pathLength);
     sendPath.serializeString(path, pathLength);
     sendPath.sendData(*client);
     DefRetIntSendData rec;
-    Deserialize::receiveStruct(rec, *client);
+    if (( Deserialize::receiveStruct(rec, *client)) == -1 )
+    {
+        setErrno(-1);
+    }
     if (rec.retVal == -1)
     {
         setErrno(rec.errorID);
@@ -329,7 +340,6 @@ char * ClientApi::mynfs_readdir(int dirfd)
     }
     else
     {
-        std::cout<<"dang it";
         setErrno(recData.errorID);
         return NULL;
     }
@@ -337,8 +347,96 @@ char * ClientApi::mynfs_readdir(int dirfd)
 
 int ClientApi::mynfs_opendir(char *host, char *path)
 {
+    // logStart();
+    // return mynfs_open(host, path, O_DIRECTORY, 0);
+
     logStart();
-    return mynfs_open(host, path, O_DIRECTORY, 0);
+    if(path == NULL || path == nullptr){
+        std::cout << "Nie podano ścieżki" << std::endl;
+        setErrno((int)MyNFS_ERRORS::enoent);
+        return -1;
+    }
+
+    int pathLength = strlen(path) + 1;
+
+    if (pathLength > 4096)
+    {
+        std::cout << "Za dluga sciezka" << std::endl;
+        setErrno((int)MyNFS_ERRORS::enametoolong);
+        return -1;
+    }
+
+    Client * client = nullptr;
+
+    // Szukamy czy mamy już takie polaczenie
+    for (auto const& [key, val] : clients)
+    {
+        if (strcmp(val->getAddress(), host) == 0)
+        {
+            std::cout << "Znaleziono socket\n";
+            client = clients[key];
+            break;
+        }
+    } 
+
+    if(client != nullptr){
+        if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
+        {
+            std::cout << "Socket nie jest ważny v2\n";
+            delete client;
+            client = nullptr;
+        }
+    }
+
+    if (client == nullptr)
+    {
+        std::cout << "Otwieram nowy socket\n";
+        // otwiweramy nowe
+        client = new Client(host);
+        client->startConnection();
+    }
+    
+    DefRecIntData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::OPENDIR);
+    sendData.fileDescriptor = 0;
+    sendData.length = pathLength;
+    auto tmp = Serialize::sendStruct(sendData, *client);
+    if(tmp == -1){
+        int error_code;
+        int error_code_size = sizeof(error_code);
+        //getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+
+        std::cout << "Socket nie jest ważny\n";
+        setErrno(-1); // TODO
+        return -1;
+    }
+
+    // TODO odebrać potwierdzenie
+    DefRecIntData recOk;
+    Deserialize::receiveStruct(recOk, *client);
+    if(recOk.length != pathLength)
+    {
+        setErrno(-1); // TODO
+        return -1;
+    }
+
+    Serialize sendPath(pathLength);
+    sendPath.serializeString(path, pathLength);
+    sendPath.sendData(*client);
+    DefRetIntSendData rec;
+    if (( Deserialize::receiveStruct(rec, *client)) == -1 )
+    {
+        setErrno(-1);
+    }
+    if (rec.retVal == -1)
+    {
+        setErrno(rec.errorID);
+    }
+    std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
+
+    clients.insert(std::pair<int, Client*> (rec.retVal, client));
+    return rec.retVal;
+
 }
 
 mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
