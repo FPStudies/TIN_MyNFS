@@ -10,7 +10,6 @@ API::API()
         exit(1);
     }
     strcat(workDir, "/server");
-    std::cout<<workDir<<std::endl;
 }
 
 API::Seek API::toSeek(int error){
