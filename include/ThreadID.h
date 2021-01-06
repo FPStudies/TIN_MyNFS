@@ -1,6 +1,6 @@
 /**
  * @file clienthandler.h
- * @author Mateusz Kordowski, Maciej Adamski
+ * @author Mateusz Kordowski
  * @brief 
  * @version 0.1
  * @date 2021-01-04

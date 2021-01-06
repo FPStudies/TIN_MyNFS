@@ -6,7 +6,7 @@
  * 
  */
 
-//#define ENABLE_LOGS
+#define ENABLE_LOGS
 
 #include <string>
 #ifdef ENABLE_LOGS

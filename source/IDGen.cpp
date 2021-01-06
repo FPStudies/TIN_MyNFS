@@ -22,9 +22,8 @@ bool IDGen::isIdBad(ID id) const{
 
 IDGen::ID IDGen::get(){
     logStart();
-
     while(true){
-        if(values_.find(nextPossibleValue_) == values_.end()){
+        if(nextPossibleValue_ != INT32_MIN && values_.find(nextPossibleValue_) == values_.end()){
             values_.emplace(nextPossibleValue_);
             break;
         }
@@ -34,7 +33,7 @@ IDGen::ID IDGen::get(){
             break;
         }
 
-        if(nextPossibleValue_ < INT32_MAX && nextPossibleValue_ >= startVal_)
+        if(nextPossibleValue_ < endVal_ && nextPossibleValue_ >= startVal_)
             ++nextPossibleValue_;
         else nextPossibleValue_ = startVal_;
     }
@@ -79,6 +78,7 @@ IDGenMonitor::IDGenMonitor(const ID& startValue, const ID& maxValue)
 
 IDGenMonitor::ID IDGenMonitor::get(){
     const std::lock_guard<std::mutex> lock(monitor_);
+    nextPossibleValue_ = startVal_;
     return IDGen::get();
 }
 

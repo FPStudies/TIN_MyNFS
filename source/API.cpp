@@ -19,6 +19,10 @@ API::Seek API::toSeek(int error){
     }
 }
 
+/**
+ * @author Mateusz Kordowski
+ * 
+ */
 int API::mynfs_lseek(int fd, int whence, int offset, FDManager& manager){
     logStart();
     if(!manager.exist(fd)) {
