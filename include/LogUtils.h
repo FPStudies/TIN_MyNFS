@@ -6,8 +6,6 @@
  * 
  */
 
-#define ENABLE_LOGS
-
 #include <string>
 #ifdef ENABLE_LOGS
 #include "spdlog/spdlog.h"
