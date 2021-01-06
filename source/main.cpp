@@ -53,9 +53,9 @@ int main(){
 
     std::cout<<res.nfs_st_size;
 
-    char rs[res.nfs_st_size];
+    char* rs = new char[1000];
 
-    api.mynfs_read(fd, rs, sizeof(rs));
+    api.mynfs_read(fd, rs, 7);
     std::cout<<rs;
     api.mynfs_close(fd);
     std::cout<<"\nafter nfs close\n";
@@ -64,6 +64,7 @@ int main(){
     char * buf = api.mynfs_readdir(dfd);
     if(buf!=NULL) std::cout<<buf;
     api.mynfs_closedir(dfd);
+    delete[] rs;
 
 
     //auto fd2 = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
