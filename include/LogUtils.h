@@ -115,7 +115,7 @@
         "\nMessage: " + std::string(message)); \
     }while(false)
 #else
-#define logSendStruct(structure, message) ;
+#define logSendStructMessage(structure, message) ;
 #endif
 
 #ifdef ENABLE_LOGS
