@@ -2,4 +2,5 @@ external/spdlog
 Program
 Test
 *.o
-*.a
+*.alogs
+logs/

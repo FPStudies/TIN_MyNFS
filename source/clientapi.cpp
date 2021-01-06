@@ -482,6 +482,7 @@ mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
     mstat.nfs_st_size = recData.nfs_st_size;
     mstat.nfs_st_atime = recData.nfs_st_atime;
     mstat.nfs_st_mtime = recData.nfs_st_mtime;
+    mstat.nfs_st_atime = recData.nfs_is_dir;
 
     return mstat;
 }

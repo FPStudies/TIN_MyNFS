@@ -52,10 +52,11 @@ enum class MyNFS_ERRORS {
 
 struct mynfs_stat
 {
-	bool		nfs_st_valid;		/* poprawność pobrania atrybutów */
-	int32_t		nfs_st_size;	    /* wielkość w bajtach (32 bity z 64) */
-	int32_t    	nfs_st_atime;	    /* czas ostatniego dostępu (32 bity) */
-	int32_t    	nfs_st_mtime;		/* czas ostatniej modyfikacji (32 bity) */
+	bool		nfs_st_valid;		/* poprawność pobrania atrybutów                   */
+	bool        nfs_is_dir;         /* czy plik powiazany z deskryptorem jest folderem */
+    int32_t		nfs_st_size;	    /* wielkość w bajtach (32 bity z 64)               */
+	int32_t    	nfs_st_atime;	    /* czas ostatniego dostępu (32 bity)               */
+	int32_t    	nfs_st_mtime;		/* czas ostatniej modyfikacji (32 bity)            */
 };
 
 enum class ApiIDS: char
