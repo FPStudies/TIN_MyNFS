@@ -29,13 +29,13 @@ int main(){
     //     res = api.mynfs_fstat(fd);
     //     std::cout<<res.nfs_st_size;
 
-    for(int i = 0; i < 100; ++i) {
+    // for(int i = 0; i < 100; ++i) {
     ClientApi api;
     auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
     char* mes = "Siemka";
     std::cout<<"\nafter nfs open\n";
 
-    api.mynfs_write(fd, mes, 7);
+    api.mynfs_write(fd, mes, strlen(mes) + 1);
     std::cout<<"\nafter nfs write\n";
 
     auto res = api.mynfs_fstat(fd);
@@ -53,6 +53,10 @@ int main(){
 
     std::cout<<res.nfs_st_size;
 
+    char rs[res.nfs_st_size];
+
+    api.mynfs_read(fd, rs, sizeof(rs));
+    std::cout<<rs;
     api.mynfs_close(fd);
     std::cout<<"\nafter nfs close\n";
 
@@ -64,6 +68,6 @@ int main(){
 
     //auto fd2 = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
     
-    }
+
     return 0;
 }

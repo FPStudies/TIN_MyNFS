@@ -17,7 +17,7 @@ bool isSockGood(int socket_fd){
     int error = 0;
     socklen_t len = sizeof (error);
     int retval = getsockopt (socket_fd, SOL_SOCKET, SO_ERROR, &error, &len);
-    std::cout << "DUPA: " << socket_fd << " " << retval << " " << error << std::endl;
+    std::cout << "Socket, retval: " << socket_fd << " " << retval << " " << error << std::endl;
     if (retval != 0) {
         /* there was a problem getting the error code */
         fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
@@ -158,6 +158,13 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 
     DefRetIntSendData recData;
     Deserialize::receiveStruct(recData, *client);
+
+    DefRetIntSendData recOk;
+    recOk.retVal = recData.retVal;
+    recOk.operID = recData.operID;
+    recOk.errorID = 0;
+    Serialize::sendStruct(recOk, *client);
+
 
     if (recData.errorID == 0)
     {
