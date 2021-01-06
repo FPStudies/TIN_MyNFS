@@ -31,7 +31,7 @@ int main(){
 
     for(int i = 0; i < 100; ++i) {
     ClientApi api;
-    auto fd = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
+    auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
     char* mes = "Siemka";
     std::cout<<"\nafter nfs open\n";
 
@@ -56,9 +56,9 @@ int main(){
     api.mynfs_close(fd);
     std::cout<<"\nafter nfs close\n";
 
-    auto dfd = api.mynfs_opendir("127.0.0.1", "source");
+    auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
     char * buf = api.mynfs_readdir(dfd);
-    std::cout<<buf;
+    if(buf!=NULL) std::cout<<buf;
     api.mynfs_closedir(dfd);
 
 

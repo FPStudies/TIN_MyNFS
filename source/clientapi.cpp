@@ -49,6 +49,13 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         return -1;
     }
 
+    if(path[0] != '/')
+    {
+        std::cout << "Sciezka nie zaczyna sie od znaku '/'" << std::endl;
+        setErrno((int)MyNFS_ERRORS::enotdir);
+        return -1;
+    }
+
     int pathLength = strlen(path) + 1;
 
     if (pathLength > 4096)
@@ -354,6 +361,13 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     if(path == NULL || path == nullptr){
         std::cout << "Nie podano ścieżki" << std::endl;
         setErrno((int)MyNFS_ERRORS::enoent);
+        return -1;
+    }
+
+    if(path[0] != '/')
+    {
+        std::cout << "Sciezka nie zaczyna sie od znaku '/'" << std::endl;
+        setErrno((int)MyNFS_ERRORS::enotdir);
         return -1;
     }
 
