@@ -69,22 +69,13 @@ private:
 public:
 
     /**
-     * @brief Dodanie 
+     * @brief Dodanie lub modyfikacja istniejącej pary.
      * 
      * @param id własne ID, które będzie zmapowane na systemowe ID wątku.
      * @return true 
      * @return false 
      */
-    bool add(int id);
-
-    /**
-     * @brief Usuwanie
-     * 
-     * @param id własne ID
-     * @return true 
-     * @return false 
-     */
-    bool remove(int id);
+    void add(int id);
 
     /**
      * @brief Zwraca własne ID wątku względem ID wątku z którego zostało to wywołane

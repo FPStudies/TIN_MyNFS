@@ -75,7 +75,6 @@ void *clientThread(void *arg)
     logger->info("Zamknieto socket " + std::to_string(threadStruct->sock) + " Thread ID: " + std::to_string(threadStruct->threadID));
     #endif
     threadStruct->threadIDGen.dispose(threadStruct->threadID);
-    tid.remove(threadStruct->threadID);
     delete threadStruct;
 	pthread_exit(NULL);
 }
