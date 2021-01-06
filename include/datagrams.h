@@ -22,18 +22,24 @@ struct OpenFileRecData{
     int oflag;
     int mode;
     int pathLength;
+
+    operator std::string();
 };
 
 struct ReadFileRecData{
     char operID;
     short int fileDescriptor;
     int length;
+
+    operator std::string();
 };
 
 struct DefRecIntData{
     char operID;
     short int fileDescriptor;
     int length;
+
+    operator std::string();
 };
 
 
@@ -42,16 +48,22 @@ struct LseekRecData{
     short int fileDescriptor;
     int whence;
     int offset;
+
+    operator std::string();
 };
 
 struct CloseRecData{
     char operID;
     short int fileDescriptor;
+
+    operator std::string();
 };
 
 struct RecDataCloseDir{
     char operID;
     short int fileDescriptor;
+
+    operator std::string();
 };
 
 struct fstatRetData
@@ -62,18 +74,24 @@ struct fstatRetData
     bool nfs_is_dir;
 	int  nfs_st_size;	    
 	int  nfs_st_atime;	    
-	int  nfs_st_mtime;		
+	int  nfs_st_mtime;	
+
+    operator std::string();	
 };
 
 struct RecDataOneLine{
     char operID;
     short int fileDescriptor;
+
+    operator std::string();
 };
 
 struct DefRetIntSendData{
     char operID;
     char errorID;
     int retVal;
+
+    operator std::string();
 };
 
 

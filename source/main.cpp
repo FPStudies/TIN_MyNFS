@@ -29,42 +29,44 @@ int main(){
     //     res = api.mynfs_fstat(fd);
     //     std::cout<<res.nfs_st_size;
 
-    // for(int i = 0; i < 100; ++i) {
-    ClientApi api;
-    auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
-    char* mes = "Siemka";
-    std::cout<<"\nafter nfs open\n";
+    for(int i = 0; i < 100; ++i) {
+        ClientApi api;
+        auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
+        char* mes = "Siemka";
+        std::cout<<"\nafter nfs open\n";
 
-    api.mynfs_write(fd, mes, strlen(mes) + 1);
-    std::cout<<"\nafter nfs write\n";
+        api.mynfs_write(fd, mes, strlen(mes) + 1);
+        std::cout<<"\nafter nfs write\n";
 
-    auto res = api.mynfs_fstat(fd);
-    std::cout<<"\nafter nfs fstat\n";
+        auto res = api.mynfs_fstat(fd);
+        std::cout<<"\nafter nfs fstat\n";
 
-    std::cout<<res.nfs_st_size;
-    api.mynfs_lseek(fd, SEEK_END, 0);
-    std::cout<<"\nafter nfs fstat\n";
+        std::cout<<res.nfs_st_size;
+        api.mynfs_lseek(fd, SEEK_END, 0);
+        std::cout<<"\nafter nfs fstat\n";
 
-    api.mynfs_write(fd, mes, 7);
-    std::cout<<"\nafter nfs write\n";
+        api.mynfs_write(fd, mes, 7);
+        std::cout<<"\nafter nfs write\n";
 
-    res = api.mynfs_fstat(fd);
-    std::cout<<"\nafter nfs fstat\n";
+        res = api.mynfs_fstat(fd);
+        std::cout<<"\nafter nfs fstat\n";
 
-    std::cout<<res.nfs_st_size;
+        std::cout<<res.nfs_st_size;
 
-    char* rs = new char[1000];
+        char* rs = new char[1000];
 
-    api.mynfs_read(fd, rs, 7);
-    std::cout<<rs;
-    api.mynfs_close(fd);
-    std::cout<<"\nafter nfs close\n";
+        api.mynfs_lseek(fd, SEEK_SET, 0);
+        api.mynfs_read(fd, rs, 7);
+        std::cout<<rs;
+        api.mynfs_close(fd);
+        std::cout<<"\nafter nfs close\n";
 
-    auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
-    char * buf = api.mynfs_readdir(dfd);
-    if(buf!=NULL) std::cout<<buf;
-    api.mynfs_closedir(dfd);
-    delete[] rs;
+        auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
+        char * buf = api.mynfs_readdir(dfd);
+        if(buf!=NULL) std::cout<<buf;
+        api.mynfs_closedir(dfd);
+        delete[] rs;
+    }
 
 
     //auto fd2 = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
