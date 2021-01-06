@@ -23,7 +23,7 @@ void ClientHandler::run()
     ApiIDS id;
     FDManager fdManager;
     IDGen idGen;
-    std::cout << "Polaczono klienta nr "<< clientNum << ". Socket " << sock << std::endl;
+    logInfo("Polaczono klienta nr " + std::to_string(clientNum) + ". Socket " + std::to_string(sock));
     while(run)
     {
         Deserialize data(16);
@@ -33,7 +33,7 @@ void ClientHandler::run()
         else
         {
             id = static_cast<ApiIDS>(data.deserializeChar());
-            std::cout << (int)id << std::endl;
+            logInfo("ID operacji: " + std::to_string(static_cast<int>(id)));
             switch (id)
             {
                 case ApiIDS::OPEN:
@@ -61,7 +61,7 @@ void ClientHandler::run()
                     fstatFile(data, fdManager);
                     break;        
                 default:
-                    std::cout << "nieznana operacja\n"; // TODO         
+                    logInfo("nieznana operacja"); // TODO      
             }
         }
     }
@@ -122,7 +122,7 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     Deserialize retString(rec.length);
     logCustom("Waiting to receive string");
     retString.receiveData(sock, clientNum);
-    logCustom("String received: " + std::string(retString.getBuffor()));
+    logCustom("String received: " + std::string(retString.getBuffer()));
 
     char* toWrite = new char[rec.length];
     retString.deserializeString(toWrite, rec.length);

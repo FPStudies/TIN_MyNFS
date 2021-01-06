@@ -11,13 +11,13 @@
 #include "datagrams.h"
 
 Datagram::Datagram(size_t bufSize) 
-: pos(0), allDataSize(0), bufSize(bufSize), buffor(new char[bufSize]), del(true)
+: pos(0), allDataSize(0), bufSize(bufSize), buffer(new char[bufSize]), del(true)
 {}
 
 Datagram::~Datagram() 
 {
     if(del)
-        delete (char*)buffor;
+        delete (char*)buffer;
 }
 
 Deserialize::Deserialize(size_t bufSize)
@@ -29,14 +29,14 @@ Serialize::Serialize(size_t bufSize)
 {}
 
 void Serialize::serializePadding(const size_t size){
-    memset(buffor + pos, 0, size); // to not send trash data
+    memset(buffer + pos, 0, size); // to not send trash data
     pos += size;
     allDataSize = std::max(pos, allDataSize);
 }
 
 void Serialize::serializeInt(const int value)
 {
-    memcpy(buffor + pos, &value, sizeof(int));
+    memcpy(buffer + pos, &value, sizeof(int));
     pos += sizeof(int);
     allDataSize = std::max(pos, allDataSize);
 }
@@ -45,21 +45,21 @@ void Serialize::serializeString(const char* string,const size_t size)
 {
     if(size > bufSize)
         throw std::runtime_error("Buffer overflow.");
-    memcpy(buffor + pos, string, size);
+    memcpy(buffer + pos, string, size);
     pos += size;
     allDataSize = std::max(pos, allDataSize);
 }
 
 void Serialize::serializeChar(const char character)
 {
-    memcpy(buffor + pos, &character, sizeof(char));
+    memcpy(buffer + pos, &character, sizeof(char));
     pos += sizeof(char);
     allDataSize = std::max(pos, allDataSize);
 }  
 
 void Serialize::serializeShortInt(const short int value)
 {
-    memcpy(buffor + pos, &value, sizeof(short int));
+    memcpy(buffer + pos, &value, sizeof(short int));
     pos += sizeof(short int);
     allDataSize = std::max(pos, allDataSize);
 }
@@ -72,24 +72,23 @@ void Deserialize::deserializePadding(const size_t size){
 int Deserialize::deserializeInt()
 {
     int ret;
-    memcpy(&ret, buffor + pos, sizeof(int));
+    memcpy(&ret, buffer + pos, sizeof(int));
     pos += sizeof(int);
     allDataSize = std::max(pos, allDataSize);
     return ret;
 }
 
 void Deserialize::deserializeString(char* string, const size_t strSize){
-    char ret;
     if(strSize > bufSize)
         throw std::runtime_error("Buffer overflow.");
-    memcpy(string, buffor + pos, strSize);
+    memcpy(string, buffer + pos, strSize);
     pos += strSize;
     allDataSize = std::max(pos, allDataSize);
 }
 
 char Deserialize::deserializeChar(){
     char ret;
-    memcpy(&ret, buffor + pos, sizeof(char));
+    memcpy(&ret, buffer + pos, sizeof(char));
     pos += sizeof(char);
     allDataSize = std::max(pos, allDataSize);
     return ret;
@@ -97,7 +96,7 @@ char Deserialize::deserializeChar(){
 
 short int Deserialize::deserializeShortInt(){
     short int ret;
-    memcpy(&ret, buffor + pos, sizeof(short int));
+    memcpy(&ret, buffer + pos, sizeof(short int));
     pos += sizeof(short int);
     allDataSize = std::max(pos, allDataSize);
     return ret;
@@ -119,21 +118,21 @@ size_t Datagram::getBufSize() const{
     return bufSize;
 }
 
-const char * const Datagram::getBuffor() const{
-    return buffor;
+const char * const Datagram::getBuffer() const{
+    return buffer;
 }
 
 ssize_t Deserialize::receiveData(const int socket, const int clientNumber){
     ssize_t readFlag;
     
-    if ((readFlag = read(socket, buffor, bufSize)) == -1)
+    if ((readFlag = read(socket, buffer, bufSize)) == -1)
     {
-        std::cout << "Nie udalo sie odebrac. (" << clientNumber << ")" << std::endl;
+        logInfo("Nie udalo sie odebrac. (" + std::to_string(clientNumber) + ")");
         return -1;
     }
     else if (readFlag == 0)
     {
-        std::cout << "Koniec polaczenia z klientem " << clientNumber << std::endl;
+        logInfo("Koniec polaczenia z klientem (" + std::to_string(clientNumber) + ")");
         return 0;
     }
     
@@ -143,15 +142,15 @@ ssize_t Deserialize::receiveData(const int socket, const int clientNumber){
 ssize_t Serialize::sendData(const int socket, const int clientNumber)
 {
     ssize_t writeFlag;
-    writeFlag = send(socket, buffor, bufSize, 0);
+    writeFlag = send(socket, buffer, bufSize, 0);
 
     if (writeFlag == -1)
     {
-        std::cout << "Nie udalo sie wyslac wiadomosci " << "(" << clientNumber << ")" << std::endl;
+        logInfo("Nie udalo sie wyslac wiadomosci (" + std::to_string(clientNumber) + ")");
     }
     else
     {
-        std::cout << "Wyslano wiadomosc " << "(" << clientNumber << ")" << std::endl;
+        logInfo("Wyslano wiadomosc (" + std::to_string(clientNumber) + ")");
     }
     return writeFlag;
 }

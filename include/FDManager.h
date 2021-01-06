@@ -42,6 +42,7 @@ class FDManager{
     >;
     using FDVector = std::vector<boost::reference_wrapper<FileDescriptor>>;
     MultiMap fd_;
+    int threadID_;
 
 public:
     FDManager() = default;
@@ -57,8 +58,6 @@ public:
     FileDescriptor& get(int fd);
     FDVector get(const std::string& path);
     bool empty() const;
-
-
 };
 
 #endif

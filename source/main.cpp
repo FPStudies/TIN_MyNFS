@@ -1,10 +1,7 @@
 #include <iostream>
 #include <fcntl.h>
 
-#ifdef ENABLE_LOGS
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
-#endif
+
 #include "FDManager.h"
 #include "API.h"
 #include "server.h"

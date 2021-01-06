@@ -4,6 +4,7 @@
  */
 
 #include "IDGen.h"
+#include <iostream>
 
 IDGen::IDGen(const ID& startValue, const ID& maxValue)
 : values_(), 
@@ -21,26 +22,24 @@ bool IDGen::isIdBad(ID id) const{
 
 IDGen::ID IDGen::get(){
     logStart();
-    ID ret = nextPossibleValue_;
-    values_.emplace(ret);
 
-    bool notFound = true;
-    while(notFound){
-        if(values_.size() == endVal_ - startVal_){
-            ret = INT32_MIN;
-            notFound = false;
+    while(true){
+        if(values_.find(nextPossibleValue_) == values_.end()){
+            values_.emplace(nextPossibleValue_);
             break;
         }
-        if(nextPossibleValue_ < INT32_MAX)
+
+        if(values_.size() == (endVal_ - startVal_)){
+            nextPossibleValue_ = INT32_MIN;
+            break;
+        }
+
+        if(nextPossibleValue_ < INT32_MAX && nextPossibleValue_ >= startVal_)
             ++nextPossibleValue_;
         else nextPossibleValue_ = startVal_;
-
-        if(values_.find(nextPossibleValue_) == values_.end()){
-            notFound = false;
-        }
     }
-    logEndCustom("Get id: " + std::to_string(ret));
-    return ret;
+    logEndCustom("Get id: " + std::to_string(nextPossibleValue_));
+    return nextPossibleValue_;
 }
 
 bool IDGen::exist(const ID& id) const{

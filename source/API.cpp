@@ -174,7 +174,7 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 	DIR* dir = fdopendir(fd);
 	if (dir == NULL)
 	{
-        std::cout<<"after open\n";
+        logInfo("after open");
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
 		return NULL;
@@ -289,7 +289,7 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 	if((fd = open(path, oflag, mode)) == -1)
 	{
 		error_ = Error::Type::eserv;
-        std::cout<<"\nwell dang it\n";
+        logInfo("well dang it");
 		logEndCustom(error_);
 		return -1;
 	}
@@ -327,7 +327,7 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         fileStat.nfs_st_valid = false;
-        std::cout<<"\nfstat nie dziala\n";
+        logInfo("fstat nie dziala");
         return fileStat;
     }
     
@@ -426,7 +426,7 @@ int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
         return -1;
     }
     if(!manager.exist(mynfs_fd)) {
-        std::cout<<"lipa";
+        logInfo("lipa");
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         return -1;

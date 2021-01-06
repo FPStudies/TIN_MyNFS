@@ -6,3 +6,4 @@ Test
 *.o
 *.afile.txt
 file.txt
+logs/*

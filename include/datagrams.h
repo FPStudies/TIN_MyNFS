@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "LogUtils.h"
 
 struct OpenFileRecData{
     char operID;
@@ -81,7 +82,7 @@ protected:
     size_t pos;
     size_t allDataSize;
     size_t bufSize;
-    char* buffor;
+    char* buffer;
     bool del;
 
 public:
@@ -95,10 +96,10 @@ public:
 
     template<typename Data>
     void castBufferToStruct(Data& structure) const{
-        memcpy(&structure, buffor, sizeof(Data));
+        memcpy(&structure, buffer, sizeof(Data));
     }
 
-    const char * const getBuffor() const;
+    const char * const getBuffer() const;
 };
 
 class Deserialize: public Datagram
@@ -119,12 +120,12 @@ public:
     
         if ((readFlag = read(socket, &structure, sizeof(Data))) == -1)
         {
-            std::cout << "Nie udalo sie odebrac stuktury. (" << clientNumber << ")" << std::endl;
+            logInfo("Nie udalo sie odebrac stuktury. (" + std::to_string(clientNumber) + ")");
             return -1;
         }
         else if (readFlag == 0)
         {
-            std::cout << "Koniec polaczenia z klientem " << clientNumber << std::endl;
+            logInfo("Koniec polaczenia z klientem " + std::to_string(clientNumber) + ")");
             return 0;
         }
         
@@ -153,11 +154,11 @@ public:
 
         if (writeFlag == -1)
         {
-            std::cout << "Nie udalo sie wyslac stuktury " << "(" << clientNumber << ")" << std::endl;
+            logInfo("Nie udalo sie wyslac stuktury (" + std::to_string(clientNumber) + ")");
         }
         else
         {
-            std::cout << "Wyslano wiadomosc " << "(" << clientNumber << ")" << std::endl;
+            logInfo("Wyslano wiadomosc (" + std::to_string(clientNumber) + ")");
         }
         return writeFlag;
     }
