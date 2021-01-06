@@ -101,6 +101,55 @@
 #define logInfoKnownThreadName(threadName, comment) ;
 #endif
 
+#ifdef ENABLE_LOGS
+#define logSendStruct(structure) \
+    do {\
+        spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\tSending structure: " + static_cast<std::string>(structure)); \
+    }while(false)
+#else
+#define logSendStruct(structure) ;
+#endif
+
+#ifdef ENABLE_LOGS
+#define logSendStructMessage(structure, message) \
+    do {\
+        spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\tSending structure: " + static_cast<std::string>(structure) + \
+        "\nMessage: " + std::string(message)); \
+    }while(false)
+#else
+#define logSendStruct(structure, message) ;
+#endif
+
+#ifdef ENABLE_LOGS
+#define logReceiveStructMessage(structure, message) \
+    do {\
+        spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nReceived structure: " + static_cast<std::string>(structure) + \
+        "\nMessage: " + std::string(message)); \
+    }while(false)
+#else
+#define logReceiveStructMessage(structure, message) ;
+#endif
+
+#ifdef ENABLE_LOGS
+#define logSendStringMessage(str, message) \
+    do {\
+        spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nSending string: " + std::string(str) + \
+        "\nMessage: " + std::string(message)); \
+    }while(false)
+#else
+#define logSendStringMessage(str, message) ;
+#endif
+
+#ifdef ENABLE_LOGS
+#define logReceiveStringMessage(str, message) \
+    do {\
+        spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nReceived string: " + std::string(str) + \
+        "\nMessage: " + std::string(message)); \
+    }while(false)
+#else
+#define logReceiveStringMessage(str, message) ;
+#endif
+
 static std::string logName(int threadID){
     return "async_logger_" + std::to_string(threadID);
 }

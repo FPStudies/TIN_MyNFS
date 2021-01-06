@@ -33,7 +33,7 @@ public:
 
     FileDescriptor(
         IDGen& generator, 
-        const OffsetType& initialOffset, 
+        OffsetType initialOffset, 
         const ModeType& mode, 
         const std::string& path, 
         //std::fstream&& fileHandler
@@ -44,8 +44,8 @@ public:
 
 
     ~FileDescriptor();
-    FileDescriptor(FileDescriptor&& other) = default;
-	FileDescriptor(const FileDescriptor& other) = default;
+    FileDescriptor(FileDescriptor&& other);
+	FileDescriptor(const FileDescriptor& other) = delete;
 
     int getID() const;
     const int& getIDConst() const;

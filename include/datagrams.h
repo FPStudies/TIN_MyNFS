@@ -24,6 +24,7 @@ struct OpenFileRecData{
     int pathLength;
 
     OpenFileRecData();
+    operator std::string();
 };
 
 struct ReadFileRecData{
@@ -32,6 +33,7 @@ struct ReadFileRecData{
     int length;
 
     ReadFileRecData();
+    operator std::string();
 };
 
 struct DefRecIntData{
@@ -40,6 +42,7 @@ struct DefRecIntData{
     int length;
 
     DefRecIntData();
+    operator std::string();
 };
 
 
@@ -50,6 +53,7 @@ struct LseekRecData{
     int offset;
 
     LseekRecData();
+    operator std::string();
 };
 
 struct CloseRecData{
@@ -57,6 +61,8 @@ struct CloseRecData{
     short int fileDescriptor;
 
     CloseRecData();
+
+    operator std::string();
 };
 
 struct RecDataCloseDir{
@@ -64,6 +70,8 @@ struct RecDataCloseDir{
     short int fileDescriptor;
 
     RecDataCloseDir();
+
+    operator std::string();
 };
 
 
@@ -77,6 +85,8 @@ struct fstatRetData
 	int  nfs_st_mtime;	
 
     fstatRetData();
+
+    operator std::string();
 };
 
 struct RecDataOneLine{
@@ -84,6 +94,8 @@ struct RecDataOneLine{
     short int fileDescriptor;
 
     RecDataOneLine();
+
+    operator std::string();
 };
 
 struct DefRetIntSendData{
@@ -92,6 +104,8 @@ struct DefRetIntSendData{
     int retVal;
 
     DefRetIntSendData();
+
+    operator std::string();
 };
 
 class Datagram

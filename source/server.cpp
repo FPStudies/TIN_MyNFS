@@ -26,6 +26,7 @@ std::shared_ptr<spdlog::logger> createLogger(int threadID, int sock, int clientN
     /*+ "_" + std::string(std::ctime(&currentTime))*/ \
     + ".txt");
     logger->info("Utworzono watek klienta nr " + std::to_string(clientNums) + ", socket " + std::to_string(sock));
+    return logger;
 }
 #endif
 void *clientThread(void *arg)
@@ -45,10 +46,10 @@ void *clientThread(void *arg)
     handler.run();
 
 	close(threadStruct->sock);
-    threadStruct->threadIDGen.dispose(threadStruct->threadID);
     #ifdef ENABLE_LOGS
     logger->info("Zamknieto socket " + std::to_string(threadStruct->sock) + " Thread ID: " + std::to_string(threadStruct->threadID));
     #endif
+    threadStruct->threadIDGen.dispose(threadStruct->threadID);
     tid.remove(threadStruct->threadID);
     delete threadStruct;
 	pthread_exit(NULL);
@@ -122,11 +123,15 @@ void Server::connectLoop()
     const int max = MAX_USER;
     pthread_t tid[max];
     IDGenMonitor generator(0, max);
+    std::set<int> usedThreadID;
 
     while(true){
         int sock;
         auto threadID = generator.get();
         sock = createUserSocket();
+        if(sock == -1){
+            break;
+        }
         ThreadStruct* theradArg = new ThreadStruct(sock, threadID, generator);
         logInfoKnownThreadName(Server::MAIN_LOG_NAME, "Pojawil sie nowy klient. Socket nr " + std::to_string(sock));
 
@@ -134,8 +139,10 @@ void Server::connectLoop()
         if (threadID == INT32_MIN || pthread_create(&tid[threadID], NULL, clientThread, theradArg) != 0)
         {
             logInfoKnownThreadName(Server::MAIN_LOG_NAME, "Nie udalo sie utworzyc watku");
-            exit(1);
+            delete theradArg;
+            break;
         }
+        usedThreadID.insert(threadID);
     }
     /*int sock;
     for (int i = 0; i < MAX_USER; i++)
@@ -153,10 +160,9 @@ void Server::connectLoop()
 
     }*/
 
-    for (int i = 0; i < MAX_USER; i++)
-	{
-		pthread_join(tid[i], NULL);
-	}
+    for(auto it : usedThreadID){
+        pthread_join(tid[it], NULL);
+    }
 }
 
 int Server::createUserSocket()
@@ -166,7 +172,7 @@ int Server::createUserSocket()
     if ((sock = accept(connectSocket, (struct sockaddr*)0, (socklen_t*)0)) == -1)
     {
         logInfoKnownThreadName(Server::MAIN_LOG_NAME, "Blad akcepta");
-        exit(1);
+        return -1;
     }
 
     return sock;

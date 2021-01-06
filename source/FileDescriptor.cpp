@@ -7,7 +7,7 @@
 
 FileDescriptor::FileDescriptor(
     IDGen& generator,
-    const OffsetType& initialOffset, 
+    OffsetType initialOffset, 
     const ModeType& mode, 
     const std::string& path, 
     //std::fstream&& fileHandler
@@ -21,6 +21,14 @@ FileDescriptor::FileDescriptor(
     /*spdlog::debug("New FileDescriptor created:\nfdID:\t" + std::to_string(fdID_) + "\nMode:\t" + static_cast<std::string>(mode_) + "\nPath:\t" + path_);*/
 }
 
+FileDescriptor::FileDescriptor(FileDescriptor&& other)
+: fdID_(other.fdID_), fdOS_(other.fdOS_), mode_(std::move(other.mode_)), path_(other.path_), generator_(other.generator_), dir(other.dir)
+{}
+/*
+FileDescriptor::FileDescriptor(const FileDescriptor& other)
+:
+{}
+*/
 FileDescriptor::operator std::string() const{
     return std::string("\nInner file descriptor id:\t" + std::to_string(fdID_) + 
         "\nOS file descriptor:\t" + std::to_string(fdOS_) +

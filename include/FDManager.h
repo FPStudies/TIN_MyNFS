@@ -51,7 +51,7 @@ public:
     FDManager& operator=(const FDManager& other) = delete;
     FDManager& operator=(FDManager&& oother) = delete;
 
-    bool add(FileDescriptor& fileDescriptor);
+    bool add(FileDescriptor&& fileDescriptor);
     bool remove(int fd);
     bool exist(int fd);
     bool exist(const std::string& path);

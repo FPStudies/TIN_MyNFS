@@ -75,26 +75,31 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     API api;
     OpenFileRecData received;
     data.castBufferToStruct(received);
+    logReceiveStructMessage(received, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
  
     DefRecIntData recOk;
     recOk.operID = received.operID;
     recOk.fileDescriptor = received.fileDescriptor;
     recOk.length = received.pathLength;
+    logSendStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(recOk, sock, clientNum);
 
     Deserialize retString(received.pathLength);
     retString.receiveData(sock, clientNum);
+    logCustom("The pah length is: " + std::to_string(received.pathLength));
     char* path = new char[received.pathLength];
     retString.deserializeString(path, received.pathLength);
+    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     DefRetIntSendData ret;
     ret.retVal = api.mynfs_open(path, received.oflag, manager, gen, received.mode);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPEN);
     std::cout << ret.retVal << " " << (int)ret.errorID << " " << (int)ret.operID << " " << sock << " " << clientNum << std::endl;
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 
-    delete path;
+    delete[] path;
 }
 
 void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
@@ -102,22 +107,26 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
     API api;
     DefRecIntData received;
     data.castBufferToStruct(received);
+    logReceiveStructMessage(received, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     DefRecIntData recOk;
     recOk.operID = received.operID;
     recOk.fileDescriptor = received.fileDescriptor;
     recOk.length = received.length;
+    logSendStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(recOk, sock, clientNum);
 
     Deserialize retString(received.length);
     retString.receiveData(sock, clientNum);
     char* path = new char[received.length];
     retString.deserializeString(path, received.length);
+    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     DefRetIntSendData ret;
     ret.retVal = api.mynfs_opendir(path, manager, gen);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPENDIR);
+    logSendStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
@@ -128,15 +137,18 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
     DefRecIntData rec;
     data.castBufferToStruct(rec);
     char* buf = new char[rec.length];
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     DefRetIntSendData ret;
     ret.retVal = api.mynfs_read(rec.fileDescriptor, buf, rec.length, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::READ);
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum); 
 
     Serialize retString(ret.retVal);
     retString.serializeString(buf, ret.retVal);
+    logSendStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     retString.sendData(sock, clientNum);
     delete[] buf;
 }
@@ -148,26 +160,25 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     DefRecIntData rec;
     DefRetIntSendData ret, recOk;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     
     recOk.retVal = rec.length;
     recOk.errorID = 0;
     recOk.operID = rec.operID;
+    logSendStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(recOk, sock, clientNum);
 
     Deserialize retString(rec.length);
-    logCustom("Waiting to receive string");
     retString.receiveData(sock, clientNum);
-    logCustom("String received: " + std::string(retString.getBuffer()));
 
     char* toWrite = new char[rec.length];
     retString.deserializeString(toWrite, rec.length);
-    logCustom("Deserialized string: " + std::string(toWrite));
+    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     ret.retVal = api.mynfs_write(rec.fileDescriptor, toWrite, rec.length, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::WRITE);
-    logCustom("Sending struct");
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
-    logCustom("Struct send");
 
     logEndCustom("Pass");
     delete[] toWrite;
@@ -179,9 +190,12 @@ void ClientHandler::lseekFile(Deserialize& data, FDManager& manager)
     LseekRecData rec;
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+
     ret.retVal = api.mynfs_lseek(rec.fileDescriptor, rec.whence, rec.offset, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::LSEEK);
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 }
 
@@ -191,9 +205,11 @@ void ClientHandler::closeFile(Deserialize& data, FDManager& manager, bool& run)
     RecDataOneLine rec;
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     ret.retVal = api.mynfs_close(rec.fileDescriptor, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSE);
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
     
     if(manager.empty()){
@@ -208,9 +224,11 @@ void ClientHandler::closeDir(Deserialize& data, FDManager& manager, bool& run)
     RecDataOneLine rec;
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     ret.retVal = api.mynfs_closedir(rec.fileDescriptor, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::CLOSEDIR);
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 
     if(manager.empty()){
@@ -225,6 +243,7 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
     RecDataOneLine rec;
     DefRetIntSendData ret;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     char* buf = api.mynsf_readdir(rec.fileDescriptor, manager);
     ret.operID = static_cast<char>(ApiIDS::READDIR);
@@ -237,11 +256,13 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
         ret.retVal = strlen(buf); // musi kończyć się nullem
     }
 
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 
     // TODO odebranie potwierdzenia od klienta odnośnie przesłania danych
     DefRetIntSendData recOk;
     Deserialize::receiveStruct(recOk, sock, clientNum);
+    logReceiveStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     if(buf != NULL)
     {
@@ -265,6 +286,7 @@ void ClientHandler::fstatFile(Deserialize& data, FDManager& manager)
     RecDataOneLine rec;
     fstatRetData ret;
     data.castBufferToStruct(rec);
+    logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     
     mynfs_stat my_stat = api.mynfs_fstat(rec.fileDescriptor, manager);
 
@@ -276,6 +298,7 @@ void ClientHandler::fstatFile(Deserialize& data, FDManager& manager)
     ret.nfs_st_atime = my_stat.nfs_st_atime;
     ret.nfs_st_mtime = my_stat.nfs_st_mtime;
 
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum);
 }
 

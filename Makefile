@@ -1,4 +1,4 @@
-.PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs
+.PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs cleanLogs
 
 #/**
 #* @author Mateusz Kordowski
@@ -59,3 +59,6 @@ cleanProg:
 
 cleanTests:
 	cd tests && $(MAKE) clean
+
+cleanLogs:
+	cd logs && rm -f ./*.txt

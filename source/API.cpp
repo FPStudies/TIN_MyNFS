@@ -102,6 +102,12 @@ int API::mynfs_unlink(char* path, FDManager& manager){
             return -1;
     }
 
+    if(!manager.exist(path)){
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
     struct stat sb;
     if(stat(path, &sb) == 0) {
         if(S_ISDIR(sb.st_mode)){
@@ -150,7 +156,7 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 
     if(temp == -1)
     {
-        temp = mkdir(path, 0660);
+        temp = mkdir(path, mode);
         if( temp != 0)
         {
             error_ = Error::Type::ebadf;
@@ -172,9 +178,10 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
     Mode md(Mode::Operation::Read, Mode::Type::Catalog);
 
     FileDescriptor dirDes(gen, 0, md, path, -1, dir);
-    manager.add(dirDes);
+    int ret = dirDes.getID();
+    manager.add(std::move(dirDes));
     logEndCustom("Pass");
-    return dirDes.getID();
+    return ret;
 }
 
 char* API::mynsf_readdir(int dirfd, FDManager& manager)
@@ -187,7 +194,13 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 		return NULL;
 	}
 
-    auto fileDes = manager.get(dirfd);
+    if(!manager.exist(dirfd)){
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return NULL;
+    }
+
+    auto& fileDes = manager.get(dirfd);
     DIR* dir = fileDes.getDir();
 
 	// Chyba trzeba b�dzie gdzie� sk�adowa� ten DIR, �eby go nie otwiera� ca�y czas
@@ -244,7 +257,13 @@ int API::mynfs_closedir(int dirfd, FDManager& manager)
 		return -1;
 	}
 
-    auto fileDes = manager.get(dirfd);
+    if(!manager.exist(dirfd)){
+        error_ = Error::Type::ebadf;
+        logEndCustom(error_);
+        return -1;
+    }
+
+    auto& fileDes = manager.get(dirfd);
 
 	DIR* dir = fileDes.getDir();
 	if (dir == NULL)
@@ -334,9 +353,10 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 	
 	Mode md(op, tp);
 	FileDescriptor fileDes(gen, 0, md, path, fd);
-    manager.add(fileDes);
+    int ret = fileDes.getID();
+    manager.add(std::move(fileDes));
 	logEndCustom("Pass");
-	return fileDes.getID();
+	return ret;
 }
 
 struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
@@ -354,7 +374,7 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
         return fileStat;
     }
     
-    FileDescriptor fileDes( manager.get(mynfs_fd) ); 
+    FileDescriptor& fileDes = manager.get(mynfs_fd);; 
     
   	struct stat st={};
 	if(fstat(fileDes.getfd(), &st) == -1)
