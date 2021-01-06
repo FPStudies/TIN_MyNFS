@@ -10,6 +10,7 @@
 #include "Mode.h"
 #include "IDGen.h"
 #include "LogUtils.h"
+#include "dirent.h"
 
 /**
  * @brief Proxy do systemowego deskryptora plików.
@@ -26,6 +27,7 @@ class FileDescriptor{
     //std::fstream fileHandler_; // posiada offset
     std::string path_;
     IDGen& generator_;
+    DIR* dir;
 
 public:
 
@@ -35,7 +37,8 @@ public:
         const ModeType& mode, 
         const std::string& path, 
         //std::fstream&& fileHandler
-        int fileDescriptor
+        int fileDescriptor,
+        DIR* dir = nullptr
     );
 	
 
@@ -51,6 +54,7 @@ public:
     const std::string& getPathConst() const;
     void setfd(int fd);
     int getfd() const;
+    DIR* getDir() const;
 
     operator std::string() const;
 

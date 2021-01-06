@@ -142,15 +142,36 @@ int API::mynfs_unlink(char* path, FDManager& manager){
 int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 {
     logStart();
-	// Tu po prostu wystartczy wywołać tego zwykłego opena i otworzyć katalog
-	// i w sumie open po stronie serwera nie potrzebuje już hosta (to tylko potrzebne u klienta), ale nie wiem jak to Mikołaj tam zakoduej póki co
-	// więc zostawiłem zgodnie z dokumentacją - tu miki i mowie, ze dla serwera troche inaczej niz w dokumentacji te parametry wygladaja, ale poprawilem
-	
-    logEndCustom("Going to other function.");
-	return mynfs_open(path, mode, manager, gen);
-	// Proponuje jednak otworzyć tutaj od razu DIR *  przez funkcje fdopendir i zapisać 
-	
-	// ~mikolaj - tutaj inaczej zrozumialem parametry naszej metody - flags jako tryb otwarcia a mode jako uprawnienia ( tak jak to jest w linuxowym open, bo mielismy sie wzorowac ), 
+    struct stat st = {};
+    auto temp = stat(path, &st);
+
+    if(temp == -1)
+    {
+        temp = mkdir(path, 0660);
+        if( temp != 0)
+        {
+            error_ = Error::Type::ebadf;
+            return -1;
+        }
+    }
+    // if(S_ISDIR(st.st_mode) == 0)
+    // {
+    //     error_ = Error::Type::enotdir;
+    //     return -1;
+    // }
+    auto dir = opendir(path);
+    if (dir == NULL)
+    {
+        error_ = Error::Type::eserv;
+        return -1;
+    }
+
+    Mode md(Mode::Operation::Read, Mode::Type::Catalog);
+
+    FileDescriptor dirDes(gen, 0, md, path, -1, dir);
+    manager.add(dirDes);
+    logEndCustom("Pass");
+    return dirDes.getID();
 }
 
 char* API::mynsf_readdir(int dirfd, FDManager& manager)
@@ -164,17 +185,15 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 	}
 
     auto fileDes = manager.get(dirfd);
-    auto fd = fileDes.getfd();
+    DIR* dir = fileDes.getDir();
 
 	// Chyba trzeba b�dzie gdzie� sk�adowa� ten DIR, �eby go nie otwiera� ca�y czas
 	// Można otworzyć w funkcji opendir i zapisać do klasy, a później z niego korzystać.
 	// Zgodnie z tym co wklejałem z dokumentacji
 	// After a successful call to fdopendir(), fd is used internally by the implementation, and should not otherwise be used by the application.
 
-	DIR* dir = fdopendir(fd);
 	if (dir == NULL)
 	{
-        std::cout<<"after open\n";
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
 		return NULL;
@@ -207,6 +226,7 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 
 	// Zgodnie z treścią zadania zwraca liste plików i katalogów. Oddzielone tak jak w dokumentacji.
     logEndCustom("Pass");
+
 	return returnChar;
 }
 
@@ -221,9 +241,8 @@ int API::mynfs_closedir(int dirfd, FDManager& manager)
 	}
 
     auto fileDes = manager.get(dirfd);
-    auto fd = fileDes.getfd();
 
-	DIR* dir = fdopendir(fd);
+	DIR* dir = fileDes.getDir();
 	if (dir == NULL)
 	{
         error_ = Error::Type::ebadf;
@@ -289,7 +308,6 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
 	if((fd = open(path, oflag, mode)) == -1)
 	{
 		error_ = Error::Type::eserv;
-        std::cout<<"\nwell dang it\n";
 		logEndCustom(error_);
 		return -1;
 	}

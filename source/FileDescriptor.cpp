@@ -11,9 +11,10 @@ FileDescriptor::FileDescriptor(
     const ModeType& mode, 
     const std::string& path, 
     //std::fstream&& fileHandler
-    int fileDescriptor
+    int fileDescriptor,
+    DIR* dir
 )
-: fdID_(generator.get()), fdOS_(fileDescriptor), mode_(mode), path_(path), generator_(generator)
+: fdID_(generator.get()), fdOS_(fileDescriptor), mode_(mode), path_(path), generator_(generator), dir(dir)
 {
     lseek(fdOS_, initialOffset, SEEK_SET);
     locConstructorCreation(this);
@@ -57,6 +58,10 @@ void FileDescriptor::setfd(int fd){
 
 int FileDescriptor::getfd() const{
     return fdOS_;
+}
+
+DIR* FileDescriptor::getDir() const{
+    return dir;
 }
 
 bool FileDescriptor::isFile() const

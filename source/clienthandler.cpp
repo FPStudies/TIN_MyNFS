@@ -59,6 +59,9 @@ void ClientHandler::run()
                     break;
                 case ApiIDS::FSTAT:
                     fstatFile(data, fdManager);
+                    break;
+                case ApiIDS::OPENDIR:
+                    openDir(data, fdManager, idGen);
                     break;        
                 default:
                     std::cout << "nieznana operacja\n"; // TODO         
@@ -73,6 +76,12 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     OpenFileRecData received;
     data.castBufferToStruct(received);
  
+    DefRecIntData recOk;
+    recOk.operID = received.operID;
+    recOk.fileDescriptor = received.fileDescriptor;
+    recOk.length = received.pathLength;
+    Serialize::sendStruct(recOk, sock, clientNum);
+
     Deserialize retString(received.pathLength);
     retString.receiveData(sock, clientNum);
     char* path = new char[received.pathLength];
@@ -86,6 +95,31 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
 
     delete path;
 }
+
+void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
+{
+    API api;
+    DefRecIntData received;
+    data.castBufferToStruct(received);
+
+    DefRecIntData recOk;
+    recOk.operID = received.operID;
+    recOk.fileDescriptor = received.fileDescriptor;
+    recOk.length = received.length;
+    Serialize::sendStruct(recOk, sock, clientNum);
+
+    Deserialize retString(received.length);
+    retString.receiveData(sock, clientNum);
+    char* path = new char[received.length];
+    retString.deserializeString(path, received.length);
+
+    DefRetIntSendData ret;
+    ret.retVal = api.mynfs_opendir(path, manager, gen);
+    ret.errorID = api.getError();
+    ret.operID = static_cast<char>(ApiIDS::OPENDIR);
+    Serialize::sendStruct(ret, sock, clientNum);
+}
+
 
 void ClientHandler::readFile(Deserialize& data, FDManager& manager)
 {
