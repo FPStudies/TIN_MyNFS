@@ -154,3 +154,40 @@ ssize_t Serialize::sendData(const int socket, const int clientNumber)
     }
     return writeFlag;
 }
+
+
+OpenFileRecData::OpenFileRecData()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN), oflag(INT32_MIN), mode(INT32_MIN), pathLength(INT32_MIN)
+{}
+
+ReadFileRecData::ReadFileRecData()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN), length(INT32_MIN)
+{}
+
+DefRecIntData::DefRecIntData()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN), length(INT32_MIN)
+{}
+
+LseekRecData::LseekRecData()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN), whence(INT32_MIN), offset(INT32_MIN)
+{}
+
+CloseRecData::CloseRecData()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+RecDataCloseDir::RecDataCloseDir()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+fstatRetData::fstatRetData()
+: operID(CHAR_MIN), errorID(CHAR_MIN), nfs_st_valid(false), nfs_st_size(INT32_MIN), nfs_st_atime(INT32_MIN), nfs_st_mtime(INT32_MIN)
+{}	
+
+RecDataOneLine::RecDataOneLine()
+: operID(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+DefRetIntSendData::DefRetIntSendData()
+: operID(CHAR_MIN), errorID(CHAR_MIN), retVal(INT32_MIN)
+{}

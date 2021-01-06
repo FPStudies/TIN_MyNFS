@@ -1,6 +1,9 @@
 
 #include "API.h"
 
+API::API()
+: error_(Error::Type::NONE)
+{}
 
 API::Seek API::toSeek(int error){
     switch(error){

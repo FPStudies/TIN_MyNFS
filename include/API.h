@@ -39,6 +39,7 @@ struct API{
     };
     static Seek toSeek(int error);
 
+    API();
 
     int mynfs_lseek(int fd, int whence, int offset, FDManager& manager);
     int mynfs_close(int fd, FDManager& manager);

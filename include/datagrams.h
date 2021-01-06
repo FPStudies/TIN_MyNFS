@@ -22,18 +22,24 @@ struct OpenFileRecData{
     int oflag;
     int mode;
     int pathLength;
+
+    OpenFileRecData();
 };
 
 struct ReadFileRecData{
     char operID;
     short int fileDescriptor;
     int length;
+
+    ReadFileRecData();
 };
 
 struct DefRecIntData{
     char operID;
     short int fileDescriptor;
     int length;
+
+    DefRecIntData();
 };
 
 
@@ -42,16 +48,22 @@ struct LseekRecData{
     short int fileDescriptor;
     int whence;
     int offset;
+
+    LseekRecData();
 };
 
 struct CloseRecData{
     char operID;
     short int fileDescriptor;
+
+    CloseRecData();
 };
 
 struct RecDataCloseDir{
     char operID;
     short int fileDescriptor;
+
+    RecDataCloseDir();
 };
 
 
@@ -62,18 +74,24 @@ struct fstatRetData
 	bool nfs_st_valid;		
 	int  nfs_st_size;	    
 	int  nfs_st_atime;	    
-	int  nfs_st_mtime;		
+	int  nfs_st_mtime;	
+
+    fstatRetData();
 };
 
 struct RecDataOneLine{
     char operID;
     short int fileDescriptor;
+
+    RecDataOneLine();
 };
 
 struct DefRetIntSendData{
     char operID;
     char errorID;
     int retVal;
+
+    DefRetIntSendData();
 };
 
 class Datagram
