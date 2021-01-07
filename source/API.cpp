@@ -109,20 +109,25 @@ int API::mynfs_close(int fd, FDManager& manager){
  */
 int API::mynfs_unlink(char* path, FDManager& manager){
     logStart();
+
     if(!checkPathLength(path)){
         error_ = Error::Type::enametoolong;
             logEndCustom(error_);
             return -1;
     }
 
-    if(!manager.exist(path)){
+    char osPath[PATH_MAX];
+    memcpy(osPath, workDir, strlen(workDir) + 1);
+    strcat(osPath, path);
+
+    if(!manager.exist(osPath)){
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
         return -1;
     }
 
     struct stat sb;
-    if(stat(path, &sb) == 0) {
+    if(stat(osPath, &sb) == 0) {
         if(S_ISDIR(sb.st_mode)){
             error_ = Error::Type::eisdir;
             logEndCustom(error_);
@@ -136,7 +141,7 @@ int API::mynfs_unlink(char* path, FDManager& manager){
         return -1;
     }
 
-    auto fdObjects = manager.get(path);
+    auto fdObjects = manager.get(osPath);
     int lastFD = -1;
     for(auto& it : fdObjects){
         auto& myfd = it.get();
@@ -147,7 +152,7 @@ int API::mynfs_unlink(char* path, FDManager& manager){
             throw std::runtime_error("Could not remove a file."); // poważny błąd w kodzie
         }
     }
-    if(unlink(path)){
+    if(unlink(osPath)){
         error_ = Error::Type::eio;
         logEndCustom(error_);
         return -1;
@@ -316,8 +321,8 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	
    	// check the open-mode of the given file
 	if((oflag & O_RDWR) == O_RDWR) op = Mode::Operation::ReadWrite;
-	else if((oflag & O_RDONLY) == O_RDONLY) op = Mode::Operation::Read;
 	else if((oflag & O_WRONLY) == O_WRONLY) op = Mode::Operation::Write;
+    else if((oflag & O_RDONLY) == O_RDONLY) op = Mode::Operation::Read;
 	else
 	{
 		error_ = Error::Type::einval;
@@ -419,8 +424,6 @@ struct mynfs_stat API::mynfs_fstat(int mynfs_fd, FDManager& manager)
 int API::mynfs_read(int mynfs_fd, char* buf, int len, FDManager& manager)
 {
     logStart();
-
-    //TODO: decide what to check on client's side
     
     //check for errors
     if(len <= 0 )
@@ -475,8 +478,6 @@ int API::mynfs_read(int mynfs_fd, char* buf, int len, FDManager& manager)
 int API::mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager)
 {
     logStart();
-
-    //TODO: decide what to check on client's side
 
     //check for errors
     if(len <= 0 )

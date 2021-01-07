@@ -27,7 +27,7 @@ $(OBJECT_EXTERNAL): $(CATCH2_SOURCE)
 	g++ -c $< -o $@ $(FLAGS)
 
 compile: $(OBJECT_FILES) $(OBJECT_EXTERNAL)
-	g++ $(FLAGS) $^ $(DEFINE_LOGS) -o $(OUT_NAME)
+	g++ $(FLAGS) $^ $(DEFINE_LOGS) -o $(OUT_NAME) $(INCLUDE) -L../source -lsource
 
 clean: 
 	rm -f $(BINARIES) $(OUT_NAME)
