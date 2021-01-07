@@ -190,8 +190,8 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
     //     error_ = Error::Type::enotdir;
     //     return -1;
     // }
-    auto dir = opendir(osPath);
-    if (dir == NULL)
+    auto * dir = opendir(osPath);
+    if (dir == NULL || dir == nullptr)
     {
         error_ = Error::Type::eserv;
         return -1;
