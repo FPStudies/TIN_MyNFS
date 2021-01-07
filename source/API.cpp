@@ -88,7 +88,27 @@ int API::mynfs_close(int fd, FDManager& manager){
 
     auto& fdObject = manager.get(fd);
     auto fdOS = fdObject.getfd();
+    logCustom("Closing the fdOS: " + std::to_string(fdOS));
     if(close(fdOS)) {
+        switch(errno){
+            case EBADF:
+                std::cout << "EBADF" << std::endl;
+                break;
+            case EINTR:
+                std::cout << "EINTR" << std::endl;
+                break;
+            case EIO:
+                std::cout << "EIO" << std::endl;
+                break;
+            case ENOSPC:
+                std::cout << "ENOSPC" << std::endl;
+                break;
+            case EDQUOT:
+                std::cout << "EDQUOT" << std::endl;
+                break;
+            default:
+                std::cout << "unknown error" << std::endl;
+        }
         error_ = Error::Type::eserv;
         logEndCustom(error_);
         return -1;
@@ -200,8 +220,8 @@ int API::mynfs_opendir(char* path, FDManager& manager, IDGen& gen, int mode)
 
     Mode md(Mode::Operation::Read, Mode::Type::Catalog);
 
-    FileDescriptor dirDes(gen, 0, md, osPath, -1, dir);
-    int ret = dirDes.getID();
+    std::unique_ptr<FileDescriptor> dirDes = std::make_unique<FileDescriptor>(gen, 0, md, osPath, -1, dir);
+    int ret = dirDes->getID();
     manager.add(std::move(dirDes));
     logEndCustom("Pass");
     return ret;
@@ -377,8 +397,8 @@ int API::mynfs_open(char* path, int oflag, FDManager& manager, IDGen& gen, int m
    	}
 	
 	Mode md(op, tp);
-	FileDescriptor fileDes(gen, 0, md, osPath, fd);
-    int ret = fileDes.getID();
+	std::unique_ptr<FileDescriptor> fileDes = std::make_unique<FileDescriptor>(gen, 0, md, osPath, fd);
+    int ret = fileDes->getID();
     manager.add(std::move(fileDes));
 	logEndCustom("Pass");
 	return ret;

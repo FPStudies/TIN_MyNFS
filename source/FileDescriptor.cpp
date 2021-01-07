@@ -37,6 +37,7 @@ FileDescriptor::operator std::string() const{
 }
 
 FileDescriptor::~FileDescriptor(){
+    logStart();
     generator_.dispose(fdID_);
     if(dir == NULL || dir == nullptr){
         if(fdOS_ < 0) return;
@@ -53,7 +54,7 @@ FileDescriptor::~FileDescriptor(){
             errno = 0;
         }
     }
-
+    logEnd();
 }
 
 int FileDescriptor::getID() const{

@@ -18,9 +18,9 @@ class FDManager{
     struct Container{
         int id;
         std::string path;
-        FileDescriptor fd;
+        std::unique_ptr<FileDescriptor> fd;
 
-        Container(FileDescriptor&& fileDescriptor);
+        Container(std::unique_ptr<FileDescriptor>&& fileDescriptor);
         const int& operator()(const std::reference_wrapper<int>& x) const;
     };
 
@@ -51,7 +51,7 @@ public:
     FDManager& operator=(const FDManager& other) = delete;
     FDManager& operator=(FDManager&& oother) = delete;
 
-    bool add(FileDescriptor&& fileDescriptor);
+    bool add(std::unique_ptr<FileDescriptor>&& fileDescriptor);
     bool remove(int fd);
     bool exist(int fd);
     bool exist(const std::string& path);

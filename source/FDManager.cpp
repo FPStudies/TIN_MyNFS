@@ -11,14 +11,14 @@
 
 #include "FDManager.h"
 
-FDManager::Container::Container(FileDescriptor&& fileDescriptor)
-: id(fileDescriptor.getIDConst()), path(fileDescriptor.getPath()), fd(std::move(fileDescriptor))
+FDManager::Container::Container(std::unique_ptr<FileDescriptor>&& fileDescriptor)
+: id(fileDescriptor->getIDConst()), path(fileDescriptor->getPath()), fd(std::move(fileDescriptor))
 {}
 
-bool FDManager::add(FileDescriptor&& fileDescriptor){
+bool FDManager::add(std::unique_ptr<FileDescriptor>&& fileDescriptor){
     logStart();
     auto& index = fd_.get<IndexById>();
-    if(index.find(fileDescriptor.getID()) != index.end()) {
+    if(index.find(fileDescriptor->getID()) != index.end()) {
         logEndCustom("Already exist");
         return false;
     }
@@ -70,8 +70,8 @@ FileDescriptor& FDManager::get(int fd){
     logStart();
     auto& index = fd_.get<IndexById>();
     auto& tmp = *index.find(fd);
-    logEndCustom(static_cast<std::string>(tmp->fd));
-    return tmp->fd;
+    logEndCustom(static_cast<std::string>(*(tmp->fd)));
+    return *(tmp->fd);
 }
 
 FDManager::FDVector FDManager::get(const std::string& path){
@@ -81,8 +81,8 @@ FDManager::FDVector FDManager::get(const std::string& path){
     auto tmp = index.equal_range(path);
 
     for(auto& it : boost::make_iterator_range(tmp)){
-        ret.push_back(boost::reference_wrapper<FileDescriptor>(it->fd));
-        logCustom(static_cast<std::string>(it->fd));
+        ret.push_back(boost::reference_wrapper<FileDescriptor>(*(it->fd)));
+        logCustom(static_cast<std::string>(*(it->fd)));
     }
 
     logEndCustom("Returned vector.");
