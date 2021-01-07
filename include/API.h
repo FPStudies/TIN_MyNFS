@@ -77,7 +77,7 @@ struct API{
     int mynfs_write(int mynfs_fd, char* buf, int len, FDManager& manager);
 
     Error getError();
-
+    
 private:
     Error error_;
     char workDir[PATH_MAX];
