@@ -192,7 +192,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
         logCustom("Waiting to receive string");
         recString.receiveData(*client);
         recString.deserializeString(buf, recData.retVal);
-        logSendStringMessage(std::string(buf), "");
+        logReceiveStringMessage(std::string(buf), "");
         logEndCustom("Pass");
         return recData.retVal;
     }
