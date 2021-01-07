@@ -1,8 +1,19 @@
 external/spdlog
+doc
 Program
 Test
+<<<<<<< HEAD
 .vscode/
 doc/
 logs/
 server/
 *.o
+=======
+.vscode
+*.o
+*.afile.txt
+file.txt
+logs/*
+*.a
+server/
+>>>>>>> a70b9fe707d2c629697cd932ca951ad328bd5c6b
