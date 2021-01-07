@@ -35,6 +35,8 @@ int main(){
         char* mes = "Siemka";
         std::cout<<"\nafter nfs open\n";
 
+        api.mynfs_lseek(fd, SEEK_END, 0);
+
         api.mynfs_write(fd, mes, strlen(mes) + 1);
         std::cout<<"\nafter nfs write\n";
 
@@ -42,7 +44,7 @@ int main(){
         std::cout<<"\nafter nfs fstat\n";
 
         std::cout<<res.nfs_st_size;
-        api.mynfs_lseek(fd, SEEK_END, 0);
+        // api.mynfs_lseek(fd, SEEK_END, 0);
         std::cout<<"\nafter nfs fstat\n";
 
         api.mynfs_write(fd, mes, 7);
@@ -56,7 +58,7 @@ int main(){
         char* rs = new char[1000];
 
         api.mynfs_lseek(fd, SEEK_SET, 0);
-        api.mynfs_read(fd, rs, 7);
+        api.mynfs_read(fd, rs, (i+1)*7);
         std::cout<<rs;
         api.mynfs_close(fd);
         std::cout<<"\nafter nfs close\n";

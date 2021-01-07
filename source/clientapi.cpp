@@ -183,13 +183,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
         logError("did not receive data");
         setErrno((int)MyNFS_ERRORS::eserv);
         return recData.retVal;
-    }
-
-    DefRetIntSendData recOk;
-    recOk.retVal = recData.retVal;
-    recOk.operID = recData.operID;
-    recOk.errorID = 0;
-    Serialize::sendStruct(recOk, *client);
+    };
 
 
     if (recData.errorID == 0)
@@ -394,7 +388,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
     Serialize::sendStruct(recOk, *client);
     logCustom("Struct send");
 
-    if (recData.retVal > 0)
+    if (recData.retVal >= 0)
     {
         Deserialize recStr(recData.retVal);
         logCustom("Waiting to receive string");
@@ -477,7 +471,7 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     sendData.fileDescriptor = 0;
     sendData.length = pathLength;
     logSendStructMessage(sendData, "");
-    auto tmp = Serialize::sendStruct(sendData, *client);
+    auto tmp = Serialize::sendStruct(sendData, *client); // send
     if(tmp == -1){
         int error_code;
         int error_code_size = sizeof(error_code);
@@ -491,8 +485,13 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     // TODO odebrać potwierdzenie
     DefRetIntSendData recOk;
     logCustom("Waiting to receive struct");
-    Deserialize::receiveStruct(recOk, *client);
-    logReceiveStructMessage(recOk, "");
+    if (Deserialize::receiveStruct(recOk, *client) == -1)
+    {
+        logError("Receive failed");
+        setErrno(-1);
+        return -1;
+    }
+    logReceiveStructMessage(recOk, ""); // rec
     if(recOk.retVal == -1)
     {
         logError("Server encountered an error");
@@ -503,23 +502,26 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     Serialize sendPath(pathLength);
     sendPath.serializeString(path, pathLength);
     logSendStringMessage(std::string(path), "");
-    sendPath.sendData(*client);
+    sendPath.sendData(*client); // send
     logCustom("String send");
     DefRetIntSendData rec;
     if (( Deserialize::receiveStruct(rec, *client)) == -1 )
     {
         logError("did not receive data");
         setErrno((int)MyNFS_ERRORS::eserv);
+        return -1;
     }
     if (rec.retVal == -1)
     {
         logError("Server encountered an error, returned -1");
         setErrno(rec.errorID);
+        return -1;
     }
     // std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
 
     clients.insert(std::pair<int, Client*> (rec.retVal, client));
     return rec.retVal;
+    logEndCustom("Pass");
 
 }
 
