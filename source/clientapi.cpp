@@ -338,6 +338,112 @@ int ClientApi::mynfs_close(int mynfs_fd)
     return recData.retVal;
 }
 
+int ClientApi::mynfs_unlink(char *host, char *path)
+{
+    logStart();
+
+    if(path == NULL || path == nullptr){
+        setErrno((int)MyNFS_ERRORS::enoent);
+        logError("ENOENT");
+        return -1;
+    }
+
+    int pathLength = strlen(path) + 1;
+
+    if (pathLength > 4096)
+    {
+        logError("Za dluga sciezka");
+        setErrno((int)MyNFS_ERRORS::enametoolong);
+        return -1;
+    }
+
+    Client * client = nullptr;
+
+    for (auto const& it : clients)
+    {
+        if (strcmp(it.second->getAddress(), host) == 0)
+        {
+            logCustom("Socket found");
+            client = it.second;
+            break;
+        }
+    } 
+
+    if(client != nullptr){
+        if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
+        {
+            logError("Socket is not valid");
+            delete client;
+            client = nullptr;
+        }
+    }
+
+    if (client == nullptr)
+    {
+        logCustom("Opening new socket");
+        // otwiweramy nowe
+        client = new Client(host);
+        client->startConnection();
+    }
+
+    DefRecIntData sendData;
+    sendData.operID = static_cast<char>(ApiIDS::UNLINK);
+    sendData.fileDescriptor = 0;
+    sendData.length = pathLength;
+    logSendStructMessage(sendData, "");
+    auto tmp = Serialize::sendStruct(sendData, *client); // send
+    if(tmp == -1){
+        //int error_code;
+        //int error_code_size = sizeof(error_code);
+        //getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
+
+        logError("Socket is not valid\n");
+        setErrno((int)MyNFS_ERRORS::epipe); 
+        return -1;
+    }
+    logCustom("Struct send");
+    // TODO odebrać potwierdzenie
+    DefRetIntSendData recOk;
+    logCustom("Waiting to receive struct");
+    if (Deserialize::receiveStruct(recOk, *client) == -1)
+    {
+        logError("Receive failed");
+        setErrno(-1);
+        return -1;
+    }
+    logReceiveStructMessage(recOk, ""); // rec
+    if(recOk.retVal == -1)
+    {
+        logError("Server encountered an error");
+        setErrno(recOk.errorID); 
+        return -1;
+    }
+
+    Serialize sendPath(pathLength);
+    sendPath.serializeString(path, pathLength);
+    logSendStringMessage(std::string(path), "");
+    sendPath.sendData(*client); // send
+    logCustom("String send");
+    DefRetIntSendData rec;
+    if (( Deserialize::receiveStruct(rec, *client)) == -1 )
+    {
+        logError("did not receive data");
+        setErrno((int)MyNFS_ERRORS::eserv);
+        return -1;
+    }
+    if (rec.retVal == -1)
+    {
+        logError("Server encountered an error, returned -1");
+        setErrno(rec.errorID);
+        return -1;
+    }
+
+
+    logEndCustom("Pass");
+    return rec.retVal;
+}
+
+
 int ClientApi::mynfs_closedir(int dirfd)
 {
     logStart();
@@ -414,6 +520,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
         recStr.receiveData(*client);
         
         char * dirString = new char[recData.retVal];
+        dirString[0] = '\0';
         logReceiveStringMessage(std::string(dirString), "");
         recStr.deserializeString(dirString, recData.retVal);
 

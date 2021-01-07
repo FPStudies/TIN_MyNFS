@@ -15,20 +15,6 @@ int main(){
     spdlog::set_level(spdlog::level::debug);
     #endif
 
-
-    // std::cout << "Hello world" << std::endl;
-    // for(int i = 0; i < 100; ++i){
-    //     ClientApi api;
-    //     auto fd = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
-    //     char* mes = "Siemka";
-    //     api.mynfs_write(fd, mes, 7);
-    //     auto res = api.mynfs_fstat(fd);
-    //     std::cout<<res.nfs_st_size;
-    //     api.mynfs_lseek(fd, SEEK_END, 0);
-    //     api.mynfs_write(fd, mes, 7);
-    //     res = api.mynfs_fstat(fd);
-    //     std::cout<<res.nfs_st_size;
-
     for(int i = 0; i < 10; ++i) {
         ClientApi api;
         auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
@@ -73,8 +59,6 @@ int main(){
     }
 
 
-    //auto fd2 = api.mynfs_open("127.0.0.1", "file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
     
-
     return 0;
 }
