@@ -11,7 +11,7 @@ TEST_CASE ("MyNFS_unlink test.") {
         int ret = api.mynfs_unlink("/tests/test_nonexistent.txt", manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == -1);
-        REQUIRE(api.getError().get() == Error::Type::ebadf);
+        REQUIRE(api.getError().get() == Error::Type::enoent);
     }
 
     SECTION("Unlinking directory")
