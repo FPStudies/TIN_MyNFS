@@ -71,18 +71,20 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     Client * client = nullptr;
 
     // Szukamy czy mamy już takie polaczenie
-    for (auto const& [key, val] : clients)
+    for (auto const& it : clients)
     {
-        if (strcmp(val->getAddress(), host) == 0)
+        if (strcmp(it.second->getAddress(), host) == 0)
         {
             logCustom("Znaleziono socket");
-            client = clients[key];
+            client = it.second;
             break;
         }
     } 
 
+    char trashbuf[16];
+
     if(client != nullptr){
-        if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
+        if (recv(client->getSocket(),trashbuf,1, MSG_PEEK | MSG_DONTWAIT) == 0)
         {
             logError("Socket is not valid");
             delete client;
@@ -107,8 +109,8 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     logSendStructMessage(sendData, "");
     auto tmp = Serialize::sendStruct(sendData, *client);
     if(tmp == -1){
-        int error_code;
-        int error_code_size = sizeof(error_code);
+        //int error_code;
+        //int error_code_size = sizeof(error_code);
         //getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
 
         logError("Socket is not valid\n");
@@ -439,18 +441,20 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     Client * client = nullptr;
 
     // Szukamy czy mamy już takie polaczenie
-    for (auto const& [key, val] : clients)
+    for (auto const& it : clients)
     {
-        if (strcmp(val->getAddress(), host) == 0)
+        if (strcmp(it.second->getAddress(), host) == 0)
         {
             logCustom("Socket found");
-            client = clients[key];
+            client = it.second;
             break;
         }
     } 
 
+    char trashbuf[16];
+
     if(client != nullptr){
-        if (recv(client->getSocket(),NULL,1, MSG_PEEK | MSG_DONTWAIT) == 0)
+        if (recv(client->getSocket(),trashbuf,1, MSG_PEEK | MSG_DONTWAIT) == 0)
         {
             logError("Socket is not valid");
             delete client;
@@ -473,8 +477,8 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     logSendStructMessage(sendData, "");
     auto tmp = Serialize::sendStruct(sendData, *client); // send
     if(tmp == -1){
-        int error_code;
-        int error_code_size = sizeof(error_code);
+        //int error_code;
+        //int error_code_size = sizeof(error_code);
         //getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &error_code, &error_code_size);
 
         logError("Socket is not valid\n");
@@ -520,9 +524,8 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     // std::cout << "Zwrocono FD: " << rec.retVal << ", error: " << static_cast<int>(rec.errorID) << std::endl;
 
     clients.insert(std::pair<int, Client*> (rec.retVal, client));
-    return rec.retVal;
     logEndCustom("Pass");
-
+    return rec.retVal;
 }
 
 mynfs_stat ClientApi::mynfs_fstat(int mynfs_fd)
