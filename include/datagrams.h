@@ -143,7 +143,7 @@ public:
         memcpy(&structure, buffer, sizeof(Data));
     }
 
-    const char * const getBuffer() const;
+    char* getBuffer() const;
 };
 
 class Deserialize: public Datagram
@@ -154,7 +154,7 @@ public:
     ~Deserialize() = default;
     void deserializePadding(const size_t size);
     int deserializeInt();
-    void deserializeString(char* string, const size_t strSize);
+    bool deserializeString(char* string, const size_t strSize);
     char deserializeChar();
     short int deserializeShortInt();
 

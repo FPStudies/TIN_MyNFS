@@ -85,12 +85,13 @@ int Deserialize::deserializeInt()
     return ret;
 }
 
-void Deserialize::deserializeString(char* string, const size_t strSize){
+bool Deserialize::deserializeString(char* string, const size_t strSize){
     if(strSize > bufSize)
-        throw std::runtime_error("Buffer overflow.");
+        return false;
     memcpy(string, buffer + pos, strSize);
     pos += strSize;
     allDataSize = std::max(pos, allDataSize);
+    return true;
 }
 
 char Deserialize::deserializeChar(){
@@ -125,7 +126,7 @@ size_t Datagram::getBufSize() const{
     return bufSize;
 }
 
-const char * const Datagram::getBuffer() const{
+char* Datagram::getBuffer() const{
     return buffer;
 }
 

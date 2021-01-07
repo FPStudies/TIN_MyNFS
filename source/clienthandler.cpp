@@ -110,8 +110,18 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     retString.receiveData(sock, clientNum);
     logCustom("The pah length is: " + std::to_string(received.pathLength));
     char* path = new char[received.pathLength];
-    retString.deserializeString(path, received.pathLength);
-    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    if(!retString.deserializeString(path, received.pathLength)){
+        logError("Buffer too small.");
+        ret.retVal = -1;
+        ret.errorID = static_cast<char>(Error::Type::ebadlen);
+        ret.operID = static_cast<char>(ApiIDS::OPEN);
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        delete[] path;
+        return;
+    }
+    
+    logReceiveStringMessage("\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     ret.retVal = api.mynfs_open(path, received.oflag, manager, gen, received.mode);
     ret.errorID = api.getError();
@@ -153,11 +163,19 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
     Deserialize retString(received.length);
     retString.receiveData(sock, clientNum);
     char* path = new char[received.length];
-    retString.deserializeString(path, received.length);
-    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    if(retString.deserializeString(path, received.length)){
+        logError("Buffer too small.");
+        ret.retVal = -1;
+        ret.errorID = static_cast<char>(Error::Type::ebadlen);
+        ret.operID = static_cast<char>(ApiIDS::OPENDIR);
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        delete[] path;
+        return;
+    }
+    logReceiveStringMessage("\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     ret.retVal = api.mynfs_opendir(path, manager, gen);
-
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPENDIR);
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
@@ -188,7 +206,7 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
 
     Serialize retString(ret.retVal);
     retString.serializeString(buf, ret.retVal);
-    logSendStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    logSendStringMessage("\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     retString.sendData(sock, clientNum);
     delete[] buf;
 }
@@ -231,8 +249,17 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     retString.receiveData(sock, clientNum);
 
     char* toWrite = new char[rec.length];
-    retString.deserializeString(toWrite, rec.length);
-    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    if(retString.deserializeString(toWrite, rec.length)){
+        logError("Buffer too small.");
+        ret.retVal = -1;
+        ret.errorID = static_cast<char>(Error::Type::ebadlen);
+        ret.operID = static_cast<char>(ApiIDS::WRITE);
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        delete[] toWrite;
+        return;
+    }
+    logReceiveStringMessage("\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     ret.retVal = api.mynfs_write(rec.fileDescriptor, toWrite, rec.length, manager);
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::WRITE);
@@ -308,8 +335,17 @@ void ClientHandler::unlink(Deserialize& data, FDManager& manager)
     Deserialize retString(received.length);
     retString.receiveData(sock, clientNum);
     char* path = new char[received.length];
-    retString.deserializeString(path, received.length);
-    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    if(retString.deserializeString(path, received.length)){
+        logError("Buffer too small.");
+        ret.retVal = -1;
+        ret.errorID = static_cast<char>(Error::Type::ebadlen);
+        ret.operID = static_cast<char>(ApiIDS::UNLINK);
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        delete[] path;
+        return;
+    }
+    logReceiveStringMessage("\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     ret.retVal = api.mynfs_unlink(path, manager);
 
