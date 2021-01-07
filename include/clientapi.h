@@ -83,6 +83,7 @@ public:
     int mynfs_write(int mynfs_fd, const char * buf, int len);
     int mynfs_lseek(int mynfs_fd, int whence, int offset);
     int mynfs_close(int mynfs_fd);
+    int mynfs_unlink(char *host, char *path);
     int mynfs_closedir(int dirfd);
     char * mynfs_readdir(int dirfd);
     int mynfs_opendir(char *host, char *path);

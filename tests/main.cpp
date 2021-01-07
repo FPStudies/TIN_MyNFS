@@ -42,6 +42,7 @@ TEST_CASE("ReadDir tests", "[ReadDir]")
     int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
     REQUIRE(dirFD >= 0);
 
+
     int fd = api.mynfs_open("127.0.0.1", "/TestCase3_DIR/testcase3.txt", O_RDWR | O_CREAT, 0660);
     REQUIRE(fd >= 0);
     api.mynfs_close(fd);
@@ -53,7 +54,22 @@ TEST_CASE("ReadDir tests", "[ReadDir]")
     REQUIRE(retVal == 0);
 }
 
+TEST_CASE("Unlink tests", "[unlink]")
+{
+    ClientApi api;
+   int retVal = api.mynfs_unlink("127.0.0.1", "/TestCase3_DIR/testcase3.txt");
+   REQUIRE(retVal == 0);
+   
+    int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
+    REQUIRE(dirFD >= 0);
 
+    char * returnDir = api.mynfs_readdir(dirFD);
+    std::cout << returnDir << "DIR";
+    REQUIRE((strcmp(returnDir, "")) == 0);
+
+    retVal = api.mynfs_closedir(dirFD);
+    REQUIRE(retVal == 0);
+}
 
 TEST_CASE("Read and lseek tests", "[read_lseek]")
 {
