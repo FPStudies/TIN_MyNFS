@@ -1,6 +1,11 @@
 external/spdlog
+doc
 Program
 Test
+.vscode
 *.o
-*.alogs
-logs/
+*.afile.txt
+file.txt
+logs/*
+*.a
+server/
