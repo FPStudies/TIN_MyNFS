@@ -47,10 +47,10 @@ TEST_CASE("ReadDir tests", "[ReadDir]")
     api.mynfs_close(fd);
 
     char * returnDir = api.mynfs_readdir(dirFD);
-    REQUIRE(returnDir != nullptr);
+    REQUIRE(returnDir != NULL);
     REQUIRE((strcmp(returnDir, "'testcase3.txt'")) == 0);
-    delete returnDir;
-    
+    delete[] returnDir;
+
     int retVal = api.mynfs_closedir(dirFD);
     REQUIRE(retVal == 0);
 }
