@@ -35,6 +35,26 @@ TEST_CASE("write and fstat tests", "[write_fstat]")
     api.mynfs_close(fd);
 }
 
+
+TEST_CASE("ReadDir tests", "[ReadDir]")
+{
+    ClientApi api;
+    int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
+    REQUIRE(dirFD >= 0);
+
+    int fd = api.mynfs_open("127.0.0.1", "/TestCase3_DIR/testcase3.txt", O_RDWR | O_CREAT, 0660);
+    REQUIRE(fd >= 0);
+    api.mynfs_close(fd);
+
+    char * returnDir = api.mynfs_readdir(dirFD);
+    REQUIRE((strcmp(returnDir, "'testcase3.txt'")) == 0);
+
+    int retVal = api.mynfs_closedir(dirFD);
+    REQUIRE(retVal == 0);
+}
+
+
+
 TEST_CASE("Read and lseek tests", "[read_lseek]")
 {
     ClientApi api;
@@ -42,11 +62,9 @@ TEST_CASE("Read and lseek tests", "[read_lseek]")
     REQUIRE(fd >= 0);
 
     char * toWrite = "TestCase2LseekTest_SPACE_Seek_EndTest____END";
-    api.mynfs_write(fd, toWrite, strlen(toWrite)+1);
-    api.mynfs_close(fd);
+   api.mynfs_write(fd, toWrite, strlen(toWrite));
 
-    fd = api.mynfs_open("127.0.0.1", "/testCase2.txt", O_RDWR | O_CREAT, 0660);
-    REQUIRE(fd >= 0);
+    api.mynfs_lseek(fd, SEEK_SET, 0);
 
     char * returnString = new char[12];
     api.mynfs_read(fd, returnString, 9);
@@ -72,21 +90,3 @@ TEST_CASE("Read and lseek tests", "[read_lseek]")
 
     REQUIRE(retVal == 0);
 }
-
-TEST_CASE("ReadDir tests", "[ReadDir]")
-{
-    ClientApi api;
-    int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
-    REQUIRE(dirFD >= 0);
-
-    int fd = api.mynfs_open("127.0.0.1", "/TestCase3_DIR/testcase3.txt", O_RDWR | O_CREAT, 0660);
-    REQUIRE(fd >= 0);
-    api.mynfs_close(fd);
-
-    char * returnDir = api.mynfs_readdir(dirFD);
-    REQUIRE((strcmp(returnDir, "'testcase3.txt'")) == 0);
-
-    int retVal = api.mynfs_closedir(dirFD);
-    REQUIRE(retVal == 0);
-}
-
