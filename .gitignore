@@ -7,3 +7,4 @@ Test
 *.afile.txt
 file.txt
 logs/*
+*.a

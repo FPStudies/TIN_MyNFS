@@ -9,7 +9,10 @@ SOURCE = $(wildcard *.cpp)
 BINARIES = $(wildcard *.o)
 FLAGS = -Wall -g -Wextra -pedantic -pthread -std=c++17
 
+SPDLOG_LIB = -l../external/spdlog/build/spdlog
+SPDLOG_INCLUDE = -I../external/spdlog/include
 INCLUDE = -I../include
+INCLUDE_ALL = $(INCLUDE) $(SPDLOG_INCLUDE)
 
 CATCH2_SOURCE = ../external/catch2/catch_amalgamated.cpp 
 CATCH2_INCLUDE = -I../external
@@ -21,13 +24,13 @@ OBJECT_EXTERNAL = $(patsubst %.cpp, %.o, $(CATCH2_SOURCE))
 
 
 %.o: %.cpp
-	g++ -c $< -o $@ $(FLAGS) $(DEFINE_LOGS) $(INCLUDE) $(CATCH2_INCLUDE)
+	g++ -c $< -o $@ $(FLAGS) $(DEFINE_LOGS) $(INCLUDE_ALL) $(CATCH2_INCLUDE)
 
 $(OBJECT_EXTERNAL): $(CATCH2_SOURCE)
 	g++ -c $< -o $@ $(FLAGS)
 
 compile: $(OBJECT_FILES) $(OBJECT_EXTERNAL)
-	g++ $(FLAGS) $^ $(DEFINE_LOGS) -o $(OUT_NAME) $(INCLUDE) -L../source -lsource
+	g++ $(FLAGS) $^ $(DEFINE_LOGS) -o $(OUT_NAME) $(INCLUDE_ALL) -L../source -lsource
 
 clean: 
 	rm -f $(BINARIES) $(OUT_NAME)
