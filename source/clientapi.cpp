@@ -43,6 +43,15 @@ ClientApi::ClientApi()
 
 }
 
+ClientApi::~ClientApi()
+{
+    //clean *Clients
+    for (auto const& it : clients)
+    {
+        delete it.second;
+    }
+}
+
 int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
 {
     logStart();

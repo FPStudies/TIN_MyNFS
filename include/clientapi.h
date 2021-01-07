@@ -77,6 +77,7 @@ class ClientApi
 {
 public:  
     ClientApi();
+    ~ClientApi();
 
     int mynfs_open(char * host, char * path, int oflag, int mode);
     int mynfs_read(int mynfs_fd, char * buf, int len);
