@@ -145,8 +145,7 @@ int API::mynfs_unlink(char* path, FDManager& manager){
     int lastFD = -1;
     for(auto& it : fdObjects){
         auto& myfd = it.get();
-        lastFD = myfd.getfd();
-        close(lastFD);
+        lastFD = myfd.getID();
         if(!manager.remove(lastFD)){
             logEndCustom("Could not remove a file. Inner error.");
             throw std::runtime_error("Could not remove a file."); // poważny błąd w kodzie

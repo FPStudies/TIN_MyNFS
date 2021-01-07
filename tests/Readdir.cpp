@@ -36,7 +36,7 @@ TEST_CASE ("MyNFS_readdir test.") {
         int fd = api.mynfs_opendir("/tests/test_readdir_empty", manager, generator);
         char* ret = api.mynsf_readdir(fd, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
-        REQUIRE(ret == NULL);
+        REQUIRE((strcmp(ret, "")) == 0);
     }
 
     SECTION("Reading directory")
