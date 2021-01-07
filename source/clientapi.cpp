@@ -178,6 +178,12 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
     logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recData, *client);
     logReceiveStructMessage(recData, "");
+    if(recData.retVal < 0)
+    {
+        logError("did not receive data");
+        setErrno((int)MyNFS_ERRORS::eserv);
+        return recData.retVal;
+    }
 
     DefRetIntSendData recOk;
     recOk.retVal = recData.retVal;
