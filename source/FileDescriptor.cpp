@@ -38,6 +38,22 @@ FileDescriptor::operator std::string() const{
 
 FileDescriptor::~FileDescriptor(){
     generator_.dispose(fdID_);
+    if(dir == NULL || dir == nullptr){
+        if(fdOS_ < 0) return;
+        
+        if(fcntl(fdOS_, F_GETFD) < 0){
+            errno = 0;
+        }
+        else{
+            close(fdOS_);
+        }
+    }
+    else{
+        if(closedir(dir) < 0){
+            errno = 0;
+        }
+    }
+
 }
 
 int FileDescriptor::getID() const{

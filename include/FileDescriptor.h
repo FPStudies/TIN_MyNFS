@@ -7,6 +7,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "Mode.h"
 #include "IDGen.h"
 #include "LogUtils.h"
