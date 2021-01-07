@@ -519,8 +519,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
         logCustom("Waiting to receive string");
         recStr.receiveData(*client);
         
-        char * dirString = new char[recData.retVal];
-        dirString[0] = '\0';
+        char * dirString = new char[recData.retVal]();
         logReceiveStringMessage(std::string(dirString), "");
         recStr.deserializeString(dirString, recData.retVal);
 
