@@ -55,7 +55,7 @@ int main(){
 
         std::cout<<res.nfs_st_size;
 
-        char* rs = new char[1000];
+        char* rs = new char[1000]();
 
         api.mynfs_lseek(fd, SEEK_SET, 0);
         api.mynfs_read(fd, rs, (i+1)*7);

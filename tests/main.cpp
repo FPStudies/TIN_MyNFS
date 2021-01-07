@@ -47,8 +47,10 @@ TEST_CASE("ReadDir tests", "[ReadDir]")
     api.mynfs_close(fd);
 
     char * returnDir = api.mynfs_readdir(dirFD);
+    REQUIRE(returnDir != nullptr);
     REQUIRE((strcmp(returnDir, "'testcase3.txt'")) == 0);
-
+    delete returnDir;
+    
     int retVal = api.mynfs_closedir(dirFD);
     REQUIRE(retVal == 0);
 }
@@ -62,11 +64,11 @@ TEST_CASE("Read and lseek tests", "[read_lseek]")
     REQUIRE(fd >= 0);
 
     char * toWrite = "TestCase2LseekTest_SPACE_Seek_EndTest____END";
-   api.mynfs_write(fd, toWrite, strlen(toWrite));
+    api.mynfs_write(fd, toWrite, strlen(toWrite));
 
     api.mynfs_lseek(fd, SEEK_SET, 0);
 
-    char * returnString = new char[12];
+    char * returnString = new char[12]();
     api.mynfs_read(fd, returnString, 9);
     
     char * test1 = "TestCase2";
@@ -86,6 +88,7 @@ TEST_CASE("Read and lseek tests", "[read_lseek]")
     char * test3 = "Seek_EndTest";
     REQUIRE((strcmp(test3, returnString)) == 0);
 
+    delete[] returnString;
     int retVal = api.mynfs_close(fd);
 
     REQUIRE(retVal == 0);
