@@ -63,9 +63,10 @@ int main(){
         api.mynfs_close(fd);
         std::cout<<"\nafter nfs close\n";
 
+        rs = NULL;
         auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
         rs = api.mynfs_readdir(dfd);
-        if(strlen(rs) > 0) std::cout<<rs;
+        if(rs != NULL) if(strlen(rs) > 0) std::cout<<rs;
         api.mynfs_closedir(dfd);
         delete[] rs;
 

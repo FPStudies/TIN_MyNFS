@@ -14,74 +14,96 @@
 #include <algorithm>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <limits.h>
+#include "LogUtils.h"
 #include "clientapi.h"
 
 struct OpenFileRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int oflag;
     int mode;
     int pathLength;
 
+    OpenFileRecData();
     operator std::string();
 };
 
 struct ReadFileRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int length;
 
+    ReadFileRecData();
     operator std::string();
 };
 
 struct DefRecIntData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int length;
 
+    DefRecIntData();
     operator std::string();
 };
 
 
 struct LseekRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
     int whence;
     int offset;
 
+    LseekRecData();
     operator std::string();
 };
 
 struct CloseRecData{
     char operID;
+    char padding1;
     short int fileDescriptor;
+
+    CloseRecData();
 
     operator std::string();
 };
 
 struct RecDataCloseDir{
     char operID;
+    char padding1;
     short int fileDescriptor;
+
+    RecDataCloseDir();
 
     operator std::string();
 };
+
 
 struct fstatRetData
 {
     char operID;
     char errorID;
-	bool nfs_st_valid;		
-    bool nfs_is_dir;
+	bool nfs_st_valid;
+    bool nfs_is_dir;		
 	int  nfs_st_size;	    
 	int  nfs_st_atime;	    
 	int  nfs_st_mtime;	
 
-    operator std::string();	
+    fstatRetData();
+
+    operator std::string();
 };
 
 struct RecDataOneLine{
     char operID;
+    char padding1;
     short int fileDescriptor;
+
+    RecDataOneLine();
 
     operator std::string();
 };
@@ -89,12 +111,14 @@ struct RecDataOneLine{
 struct DefRetIntSendData{
     char operID;
     char errorID;
+    char padding1;
+    char padding2;
     int retVal;
+
+    DefRetIntSendData();
 
     operator std::string();
 };
-
-
 
 class Datagram
 {
@@ -102,10 +126,12 @@ protected:
     size_t pos;
     size_t allDataSize;
     size_t bufSize;
-    char* buffor;
+    char* buffer;
     bool del;
 
 public:
+    static const size_t MAX_BUF_SIZE;
+
     Datagram(size_t bufSize);
     ~Datagram();
     
@@ -116,8 +142,10 @@ public:
 
     template<typename Data>
     void castBufferToStruct(Data& structure) const{
-        memcpy(&structure, buffor, sizeof(Data));
+        memcpy(&structure, buffer, sizeof(Data));
     }
+
+    const char * const getBuffer() const;
 };
 
 class Deserialize: public Datagram
@@ -135,20 +163,22 @@ public:
     template<typename Data>
     static ssize_t receiveStruct(Data& structure, const Client& client){
         ssize_t readFlag;
-
+    
         if ((readFlag = read(client.getSocket(), &structure, sizeof(Data))) == -1)
         {
-            std::cout << "Nie udalo sie odebrac." << std::endl;
+            logCustom("Nie udalo sie odebrac stuktury. )");
             return -1;
         }
         else if (readFlag == 0)
         {
-            std::cout << "Koniec polaczenia z klientem."  << std::endl;
+            logCustom("Koniec polaczenia z serwerem )");
             return 0;
         }
         
         return readFlag;
     }
+
+    static bool badLength(int length);
 
     ssize_t receiveData(const Client& client);
 };
@@ -167,18 +197,18 @@ public:
 
     template<typename Data>
     static ssize_t sendStruct(Data& structure, const Client& client){
-        ssize_t sendFlag;
-        sendFlag = send(client.getSocket(), &structure, sizeof(Data), 0);
+        ssize_t writeFlag;
+        writeFlag = send(client.getSocket(), &structure, sizeof(Data), 0);
 
-        if (sendFlag == -1)
+        if (writeFlag == -1)
         {
-            std::cout << "Nie udalo sie wyslac wiadomosci " << std::endl;
+            logCustom("Nie udalo sie wyslac stuktury ");
         }
         else
         {
-            std::cout << "Wyslano wiadomosc " << std::endl;
+            logCustom("Wyslano wiadomosc");
         }
-        return sendFlag;
+        return writeFlag;
     }
 
     ssize_t sendData(const Client& client);

@@ -8,17 +8,18 @@
  * @copyright Copyright (c) 2021
  * 
  */
-
 #include "datagrams.h"
 
+const size_t Datagram::MAX_BUF_SIZE = UINT32_MAX - 1;
+
 Datagram::Datagram(size_t bufSize) 
-: pos(0), allDataSize(0), bufSize(bufSize), buffor(new char[bufSize]), del(true)
+: pos(0), allDataSize(0), bufSize(bufSize), buffer(new char[bufSize]), del(true)
 {}
 
 Datagram::~Datagram() 
 {
     if(del)
-        delete (char*)buffor;
+        delete[] (char*)buffer;
 }
 
 Deserialize::Deserialize(size_t bufSize)
@@ -30,14 +31,14 @@ Serialize::Serialize(size_t bufSize)
 {}
 
 void Serialize::serializePadding(const size_t size){
-    memset(buffor + pos, 0, size); // to not send trash data
+    memset(buffer + pos, 0, size); // to not send trash data
     pos += size;
     allDataSize = std::max(pos, allDataSize);
 }
 
 void Serialize::serializeInt(const int value)
 {
-    memcpy(buffor + pos, &value, sizeof(int));
+    memcpy(buffer + pos, &value, sizeof(int));
     pos += sizeof(int);
     allDataSize = std::max(pos, allDataSize);
 }
@@ -46,23 +47,28 @@ void Serialize::serializeString(const char* string,const size_t size)
 {
     if(size > bufSize)
         throw std::runtime_error("Buffer overflow.");
-    memcpy(buffor + pos, string, size);
+    memcpy(buffer + pos, string, size);
     pos += size;
     allDataSize = std::max(pos, allDataSize);
 }
 
 void Serialize::serializeChar(const char character)
 {
-    memcpy(buffor + pos, &character, sizeof(char));
+    memcpy(buffer + pos, &character, sizeof(char));
     pos += sizeof(char);
     allDataSize = std::max(pos, allDataSize);
 }  
 
 void Serialize::serializeShortInt(const short int value)
 {
-    memcpy(buffor + pos, &value, sizeof(short int));
+    memcpy(buffer + pos, &value, sizeof(short int));
     pos += sizeof(short int);
     allDataSize = std::max(pos, allDataSize);
+}
+
+bool Deserialize::badLength(int length){
+    if(length <= 0 || length > MAX_BUF_SIZE) return true;
+    return false;
 }
 
 void Deserialize::deserializePadding(const size_t size){
@@ -73,24 +79,23 @@ void Deserialize::deserializePadding(const size_t size){
 int Deserialize::deserializeInt()
 {
     int ret;
-    memcpy(&ret, buffor + pos, sizeof(int));
+    memcpy(&ret, buffer + pos, sizeof(int));
     pos += sizeof(int);
     allDataSize = std::max(pos, allDataSize);
     return ret;
 }
 
 void Deserialize::deserializeString(char* string, const size_t strSize){
-    char ret;
     if(strSize > bufSize)
         throw std::runtime_error("Buffer overflow.");
-    memcpy(string, buffor + pos, strSize);
+    memcpy(string, buffer + pos, strSize);
     pos += strSize;
     allDataSize = std::max(pos, allDataSize);
 }
 
 char Deserialize::deserializeChar(){
     char ret;
-    memcpy(&ret, buffor + pos, sizeof(char));
+    memcpy(&ret, buffer + pos, sizeof(char));
     pos += sizeof(char);
     allDataSize = std::max(pos, allDataSize);
     return ret;
@@ -98,7 +103,7 @@ char Deserialize::deserializeChar(){
 
 short int Deserialize::deserializeShortInt(){
     short int ret;
-    memcpy(&ret, buffor + pos, sizeof(short int));
+    memcpy(&ret, buffer + pos, sizeof(short int));
     pos += sizeof(short int);
     allDataSize = std::max(pos, allDataSize);
     return ret;
@@ -120,17 +125,21 @@ size_t Datagram::getBufSize() const{
     return bufSize;
 }
 
+const char * const Datagram::getBuffer() const{
+    return buffer;
+}
+
 ssize_t Deserialize::receiveData(const Client& client){
     ssize_t readFlag;
-
-    if ((readFlag = read(client.getSocket(), buffor, bufSize)) == -1)
+    
+    if ((readFlag = read(client.getSocket(), buffer, bufSize)) == -1)
     {
-        std::cout << "Nie udalo sie odebrac." << std::endl;
+        logCustom("Nie udalo sie odebrac.");
         return -1;
     }
     else if (readFlag == 0)
     {
-        std::cout << "Koniec polaczenia z klientem."  << std::endl;
+        logCustom("Koniec polaczenia z klientem ");
         return 0;
     }
     
@@ -139,19 +148,56 @@ ssize_t Deserialize::receiveData(const Client& client){
 
 ssize_t Serialize::sendData(const Client& client)
 {
-    ssize_t sendFlag;
-    sendFlag = send(client.getSocket(), buffor, bufSize, 0);
+    ssize_t writeFlag;
+    writeFlag = send(client.getSocket(), buffer, bufSize, 0);
 
-    if (sendFlag == -1)
+    if (writeFlag == -1)
     {
-        std::cout << "Nie udalo sie wyslac wiadomosci" << std::endl;
+        logCustom("Nie udalo sie wyslac wiadomosci");
     }
     else
     {
-        std::cout << "Wyslano wiadomosc" << std::endl;
+        logCustom("Wyslano wiadomosc");
     }
+    return writeFlag;
 }
 
+
+OpenFileRecData::OpenFileRecData()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN), oflag(INT32_MIN), mode(INT32_MIN), pathLength(INT32_MIN)
+{}
+
+ReadFileRecData::ReadFileRecData()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN), length(INT32_MIN)
+{}
+
+DefRecIntData::DefRecIntData()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN), length(INT32_MIN)
+{}
+
+LseekRecData::LseekRecData()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN), whence(INT32_MIN), offset(INT32_MIN)
+{}
+
+CloseRecData::CloseRecData()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+RecDataCloseDir::RecDataCloseDir()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+fstatRetData::fstatRetData()
+: operID(CHAR_MIN), errorID(CHAR_MIN), nfs_st_valid(false), nfs_is_dir(false), nfs_st_size(INT32_MIN), nfs_st_atime(INT32_MIN), nfs_st_mtime(INT32_MIN)
+{}	
+
+RecDataOneLine::RecDataOneLine()
+: operID(CHAR_MIN), padding1(CHAR_MIN), fileDescriptor(INT16_MIN)
+{}
+
+DefRetIntSendData::DefRetIntSendData()
+: operID(CHAR_MIN), errorID(CHAR_MIN), padding1(CHAR_MIN), padding2(CHAR_MIN), retVal(INT32_MIN)
+{}
 
 OpenFileRecData::operator std::string(){
     return "\noperID:\t" + std::to_string(operID) + "\nfileDescriptor:\t" + std::to_string(fileDescriptor) + "\noflag:\t" + std::to_string(oflag) + \
