@@ -29,7 +29,7 @@ int main(){
     //     res = api.mynfs_fstat(fd);
     //     std::cout<<res.nfs_st_size;
 
-    for(int i = 0; i < 100; ++i) {
+    for(int i = 0; i < 10; ++i) {
         ClientApi api;
         auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
         char* mes = "Siemka";
@@ -64,10 +64,11 @@ int main(){
         std::cout<<"\nafter nfs close\n";
 
         auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
-        char * buf = api.mynfs_readdir(dfd);
-        if(buf!=NULL) std::cout<<buf;
+        rs = api.mynfs_readdir(dfd);
+        if(strlen(rs) > 0) std::cout<<rs;
         api.mynfs_closedir(dfd);
         delete[] rs;
+
     }
 
 
