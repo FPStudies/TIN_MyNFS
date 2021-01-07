@@ -22,6 +22,8 @@ OBJECT_FILES_NO_MAIN = $(filter-out main.o, $(OBJECT_FILES))
 
 MAIN_OBJECT = main.cpp
 
+LIBFILE = libsource.a
+
 %.o: %.cpp
 	g++ -c $< -o $@ $(FLAGS) $(DEFINE_LOGS) $(INCLUDE_ALL) -L../external/spdlog/build -lspdlog
 
@@ -32,4 +34,4 @@ library: $(OBJECT_FILES_NO_MAIN)
 	ar rcs $(OUT_LIB_NAME) $^
 
 clean: 
-	rm -f $(BINARIES) $(OUT_NAME)
+	rm -f $(BINARIES) $(OUT_NAME) $(LIBFILE)
