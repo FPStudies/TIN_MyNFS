@@ -36,9 +36,9 @@ library:
 libraryNoLogs:
 	cd source && $(MAKE) library
 
-compile: compileProgram compileTest
+compile: compileProgram library compileTest
 
-compileNoLogs: compileProgramNoLogs compileTestNoLogs
+compileNoLogs: compileProgramNoLogs libraryNoLogs compileTestNoLogs
 
 compileProgramNoLogs:
 	cd source && $(MAKE) compile
