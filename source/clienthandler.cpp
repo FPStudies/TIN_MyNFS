@@ -309,7 +309,11 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
     data.castBufferToStruct(rec);
     logReceiveStructMessage(rec, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
-    char* buf = api.mynsf_readdir(rec.fileDescriptor, manager);
+
+
+    std::string strbuf = api.mynsf_readdir(rec.fileDescriptor, manager);
+    char* buf = new char[strbuf.length() + 1];
+    strcpy(buf, strbuf.c_str());
     ret.operID = static_cast<char>(ApiIDS::READDIR);
     ret.errorID = api.getError();
 
