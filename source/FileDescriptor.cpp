@@ -89,6 +89,10 @@ DIR* FileDescriptor::getDir() const{
     return dir;
 }
 
+void FileDescriptor::nullDir(){
+    dir = NULL;
+}
+
 bool FileDescriptor::isFile() const
 {
     if (mode_.type == Mode::Type::File) return true;

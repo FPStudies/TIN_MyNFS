@@ -56,6 +56,7 @@ public:
     void setfd(int fd);
     int getfd() const;
     DIR* getDir() const;
+    void nullDir();
 
     operator std::string() const;
 

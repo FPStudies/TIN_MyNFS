@@ -317,10 +317,12 @@ int API::mynfs_closedir(int dirfd, FDManager& manager)
 	if (closedir(dir) == 0)
 	{
 		// Udalo sie zamknac
+        fileDes.nullDir();
         logEndCustom("Pass.");
         manager.remove(dirfd);
 		return 0;
 	}
+
 
     error_ = Error::Type::eserv;
     logEndCustom(error_);

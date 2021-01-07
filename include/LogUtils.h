@@ -131,6 +131,11 @@
 #ifdef ENABLE_LOGS
 #define logSendStringMessage(str, message) \
     do {\
+        if(*str == '\0'){ \
+            spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nSending string: " + std::string("NULL/0") + \
+        "\nMessage: " + std::string(message)); \
+            break; \
+        } \
         spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nSending string: " + std::string(str) + \
         "\nMessage: " + std::string(message)); \
     }while(false)
@@ -141,6 +146,11 @@
 #ifdef ENABLE_LOGS
 #define logReceiveStringMessage(str, message) \
     do {\
+        if(*str == '\0'){ \
+            spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nReceived string: " + std::string("NULL/0") + \
+        "\nMessage: " + std::string(message)); \
+        break; \
+        } \
         spdlog::get(logName(ThreadID::getInstance().get()))->debug(std::string(__PRETTY_FUNCTION__) + "\nReceived string: " + std::string(str) + \
         "\nMessage: " + std::string(message)); \
     }while(false)
