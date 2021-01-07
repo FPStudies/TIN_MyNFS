@@ -97,7 +97,7 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
     else
     {
         ret.errorID = 0;
-        ret.operID = static_cast<char>(ApiIDS::OPENDIR);
+        ret.operID = static_cast<char>(ApiIDS::OPEN);
         ret.retVal = 0;
         logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
         Serialize::sendStruct(ret, sock, clientNum);
@@ -162,6 +162,8 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
     logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
 
     ret.retVal = api.mynfs_opendir(path, manager, gen);
+
+    std::cout<<ret.retVal;
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPENDIR);
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
@@ -224,7 +226,7 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     else
     {
         ret.errorID = 0;
-        ret.operID = static_cast<char>(ApiIDS::OPENDIR);
+        ret.operID = static_cast<char>(ApiIDS::WRITE);
         ret.retVal = 0;
         logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
         Serialize::sendStruct(ret, sock, clientNum);
@@ -313,7 +315,9 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
     ret.errorID = api.getError();
 
     if(buf == NULL){ // zawsze musi przy błędzie zwracać NULL
-        ret.retVal = 0;        
+        ret.retVal = -1;
+        Serialize::sendStruct(ret, sock, clientNum);        
+        return;
     }
     else{
         ret.retVal = strlen(buf); // musi kończyć się nullem
