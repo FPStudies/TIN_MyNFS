@@ -118,14 +118,14 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     logCustom("Struct send");
 
     // TODO odebrać potwierdzenie
-    DefRecIntData recOk;
+    DefRetIntSendData recOk;
     logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recOk, *client);
     logReceiveStructMessage(recOk, "");
-    if(recOk.length != pathLength)
+    if(recOk.retVal == -1)
     {
-        logError("Transmission error");
-        setErrno((int)MyNFS_ERRORS::etran); 
+        logError("Server encountered an error");
+        setErrno(recOk.errorID); 
         return -1;
     }
     
@@ -230,10 +230,10 @@ int ClientApi::mynfs_write(int mynfs_fd, const char * buf, int len)
     DefRetIntSendData recOk;
     Deserialize::receiveStruct(recOk, *client);
     logReceiveStructMessage(recOk, "");
-    if (recOk.retVal != len)
+    if (recOk.retVal == -1)
     {
-        logError("Transmission error");
-        setErrno((int)MyNFS_ERRORS::etran);
+        logError("Server encountered an error");
+        setErrno(recOk.errorID);
         return -1;
     }
 
@@ -489,14 +489,14 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     }
     logCustom("Struct send");
     // TODO odebrać potwierdzenie
-    DefRecIntData recOk;
+    DefRetIntSendData recOk;
     logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recOk, *client);
     logReceiveStructMessage(recOk, "");
-    if(recOk.length != pathLength)
+    if(recOk.retVal == -1)
     {
-        logError("Transmission error");
-        setErrno((int)MyNFS_ERRORS::etran); 
+        logError("Server encountered an error");
+        setErrno(recOk.errorID); 
         return -1;
     }
 
