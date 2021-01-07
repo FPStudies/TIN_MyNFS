@@ -43,6 +43,7 @@ public:
         edevnospc = -24, // Odmowa przyjęcia żądanej ilości bajtów
         etout = -25, // Nastąpił timeout połączenia. Podana operacja nie może zostać wykonana.
         enotfile = -26, // Podany deskryptor nie wskazuje na plik.
+        ebadlen = -27 // Podana długość przekracza limit bufora lub jest nieprawidłowa
     };
 
 private:

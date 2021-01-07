@@ -10,6 +10,8 @@
  */
 #include "datagrams.h"
 
+const size_t Datagram::MAX_BUF_SIZE = UINT32_MAX - 1;
+
 Datagram::Datagram(size_t bufSize) 
 : pos(0), allDataSize(0), bufSize(bufSize), buffer(new char[bufSize]), del(true)
 {}
@@ -62,6 +64,11 @@ void Serialize::serializeShortInt(const short int value)
     memcpy(buffer + pos, &value, sizeof(short int));
     pos += sizeof(short int);
     allDataSize = std::max(pos, allDataSize);
+}
+
+bool Deserialize::badLength(int length){
+    if(length <= 0 || length > MAX_BUF_SIZE) return true;
+    return false;
 }
 
 void Deserialize::deserializePadding(const size_t size){

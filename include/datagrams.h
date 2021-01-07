@@ -128,6 +128,8 @@ protected:
     bool del;
 
 public:
+    static const size_t MAX_BUF_SIZE;
+
     Datagram(size_t bufSize);
     ~Datagram();
     
@@ -173,6 +175,8 @@ public:
         
         return readFlag;
     }
+
+    static bool badLength(int length);
 
     ssize_t receiveData(const int socket, const int clientNumber);
 };
