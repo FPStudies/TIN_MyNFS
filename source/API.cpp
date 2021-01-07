@@ -110,7 +110,8 @@ int API::mynfs_close(int fd, FDManager& manager){
 int API::mynfs_unlink(char* path, FDManager& manager){
     logStart();
 
-    if(!checkPathLength(path)){
+    if(!checkPathLength(path))
+    {
         error_ = Error::Type::enametoolong;
             logEndCustom(error_);
             return -1;
@@ -120,22 +121,19 @@ int API::mynfs_unlink(char* path, FDManager& manager){
     memcpy(osPath, workDir, strlen(workDir) + 1);
     strcat(osPath, path);
 
-    if(!manager.exist(osPath)){
-        error_ = Error::Type::ebadf;
-        logEndCustom(error_);
-        return -1;
-    }
-
     struct stat sb;
-    if(stat(osPath, &sb) == 0) {
-        if(S_ISDIR(sb.st_mode)){
+    if(stat(osPath, &sb) == 0)
+    {
+        if(S_ISDIR(sb.st_mode))
+        {
             error_ = Error::Type::eisdir;
             logEndCustom(error_);
             return -1;
         }
         // OK
     }
-    else{
+    else
+    {
         error_ = Error::Type::enoent;
         logEndCustom(error_);
         return -1;
@@ -143,15 +141,19 @@ int API::mynfs_unlink(char* path, FDManager& manager){
 
     auto fdObjects = manager.get(osPath);
     int lastFD = -1;
-    for(auto& it : fdObjects){
+    for(auto& it : fdObjects)
+    {
         auto& myfd = it.get();
         lastFD = myfd.getID();
-        if(!manager.remove(lastFD)){
+        if(!manager.remove(lastFD))
+        {
             logEndCustom("Could not remove a file. Inner error.");
             throw std::runtime_error("Could not remove a file."); // poważny błąd w kodzie
         }
     }
-    if(unlink(osPath)){
+
+    if(unlink(osPath))
+    {
         error_ = Error::Type::eio;
         logEndCustom(error_);
         return -1;

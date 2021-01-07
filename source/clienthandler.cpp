@@ -51,6 +51,9 @@ void ClientHandler::run()
                 case ApiIDS::CLOSE:
                     closeFile(data, fdManager, run);
                     break;
+                case ApiIDS::UNLINK:
+                    unlink(data, fdManager);
+                    break;
                 case ApiIDS::CLOSEDIR:
                     closeDir(data, fdManager, run);
                     break;
@@ -126,14 +129,6 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
     DefRetIntSendData ret;
     data.castBufferToStruct(received);
     logReceiveStructMessage(received, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
-
-    // DefRetIntSendData recOk;
-    // recOk.operID = received.operID;
-    // recOk.errorID = received.fileDescriptor;S
-    // recOk.length = received.length;
-    // logSendStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
-    // Serialize::sendStruct(recOk, sock, clientNum);
-
 
     if(Deserialize::badLength(received.length)){
         ret.errorID = static_cast<char>(Error::Type::ebadlen);
@@ -280,6 +275,49 @@ void ClientHandler::closeFile(Deserialize& data, FDManager& manager, bool& run)
         run = false;
         logEndCustom("Zamknięto socket: " + std::to_string(sock));
     }
+}
+
+void ClientHandler::unlink(Deserialize& data, FDManager& manager)
+{
+    API api;
+    DefRecIntData received;
+    DefRetIntSendData ret;
+    data.castBufferToStruct(received);
+    logReceiveStructMessage(received, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+
+    if(Deserialize::badLength(received.length)){
+        ret.errorID = static_cast<char>(Error::Type::ebadlen);
+        ret.operID = static_cast<char>(ApiIDS::UNLINK);
+        ret.retVal = -1;
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        logEndCustom("Error");
+        return;
+    }
+    else
+    {
+        ret.errorID = 0;
+        ret.operID = static_cast<char>(ApiIDS::UNLINK);
+        ret.retVal = 0;
+        logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+        Serialize::sendStruct(ret, sock, clientNum);
+        logCustom("Send struct");
+    }
+    
+    
+    Deserialize retString(received.length);
+    retString.receiveData(sock, clientNum);
+    char* path = new char[received.length];
+    retString.deserializeString(path, received.length);
+    logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+
+    ret.retVal = api.mynfs_unlink(path, manager);
+
+    ret.errorID = api.getError();
+    ret.operID = static_cast<char>(ApiIDS::UNLINK);
+    logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    Serialize::sendStruct(ret, sock, clientNum);
+    delete[] path;
 }
 
 void ClientHandler::closeDir(Deserialize& data, FDManager& manager, bool& run)
