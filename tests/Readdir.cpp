@@ -33,7 +33,7 @@ TEST_CASE ("MyNFS_readdir test.") {
 
     SECTION("Empty directory")
     {
-        int fd = api.mynfs_opendir("/tests/test_readdir", manager, generator);
+        int fd = api.mynfs_opendir("/tests/test_readdir_empty", manager, generator);
         char* ret = api.mynsf_readdir(fd, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == NULL);

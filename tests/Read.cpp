@@ -47,7 +47,7 @@ TEST_CASE ("MyNFS_read test.") {
 
     SECTION("Reading empty file")
     {
-        int fd = api.mynfs_open("/tests/test_read_r.txt", O_RDWR | O_CREAT, manager, generator);
+        int fd = api.mynfs_open("/tests/test_read_empty.txt", O_RDWR | O_CREAT, manager, generator);
         int ret = api.mynfs_read(fd, buf, 20, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == 0);
