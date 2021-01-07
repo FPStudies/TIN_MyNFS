@@ -1,10 +1,13 @@
-.PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs
+.PHONY: all clean cleanProg cleanTests compile downloadLogs compileNoLogs compileProgramNoLogs compileTestNoLogs library libraryNoLogs cleanLogs
 
+#/**
+#* @author Mateusz Kordowski
+#*/
 
 CPP_FILES = $(wildcard source/*.cpp)
 BINARIES = $(wildcard source/*.o)
 OUT_NAME = Program
-FLAGS = -Wall -g
+FLAGS = -Wall -g  -O0
 
 SPDLOG_LIB = external/spdlog/build/libspdlog.a
 SPDLOG_INCLUDE = -Iexternal/spdlog/include
@@ -56,3 +59,6 @@ cleanProg:
 
 cleanTests:
 	cd tests && $(MAKE) clean
+
+cleanLogs:
+	cd logs && rm -f ./*.txt
