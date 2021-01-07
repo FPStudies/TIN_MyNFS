@@ -163,7 +163,6 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
 
     ret.retVal = api.mynfs_opendir(path, manager, gen);
 
-    std::cout<<ret.retVal;
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::OPENDIR);
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
