@@ -69,6 +69,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
     }
 
     Client * client = nullptr;
+    int pos = 0;
 
     // Szukamy czy mamy już takie polaczenie
     for (auto const& it : clients)
@@ -77,6 +78,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
         {
             logCustom("Znaleziono socket");
             client = it.second;
+            pos = it.first;
             break;
         }
     } 
@@ -89,6 +91,7 @@ int ClientApi::mynfs_open(char * host, char* path, int oflag, int mode)
             logError("Socket is not valid");
             delete client;
             client = nullptr;
+            clients.erase(pos);
         }
     }
 
@@ -390,11 +393,17 @@ char * ClientApi::mynfs_readdir(int dirfd)
     Serialize::sendStruct(recOk, *client);
     logCustom("Struct send");
 
-    if (recData.retVal >= 0)
+    if (recData.retVal == 0)
     {
+        return new char[1]();
+    }
+    if (recData.retVal > 0)
+    {
+    
         Deserialize recStr(recData.retVal);
         logCustom("Waiting to receive string");
         recStr.receiveData(*client);
+        
         char * dirString = new char[recData.retVal];
         logReceiveStringMessage(std::string(dirString), "");
         recStr.deserializeString(dirString, recData.retVal);
@@ -439,6 +448,7 @@ int ClientApi::mynfs_opendir(char *host, char *path)
     }
 
     Client * client = nullptr;
+    int pos=0;
 
     // Szukamy czy mamy już takie polaczenie
     for (auto const& it : clients)
@@ -447,6 +457,7 @@ int ClientApi::mynfs_opendir(char *host, char *path)
         {
             logCustom("Socket found");
             client = it.second;
+            pos = it.first;
             break;
         }
     } 
@@ -459,6 +470,7 @@ int ClientApi::mynfs_opendir(char *host, char *path)
             logError("Socket is not valid");
             delete client;
             client = nullptr;
+            clients.erase(pos);
         }
     }
 
