@@ -311,13 +311,11 @@ void ClientHandler::readDir(Deserialize& data, FDManager& manager) // TODO spraw
 
 
 
-    std::string strbuf = api.mynsf_readdir(rec.fileDescriptor, manager);
-    char* buf = new char[strbuf.length() + 1];
-    strcpy(buf, strbuf.c_str());
+    char* buf = api.mynsf_readdir(rec.fileDescriptor, manager);
     ret.operID = static_cast<char>(ApiIDS::READDIR);
     ret.errorID = api.getError();
 
-    if(buf == NULL){ // zawsze musi przy błędzie zwracać NULL
+    if(ret.errorID != 0){ // zawsze musi przy błędzie zwracać NULL
         ret.retVal = -1;
         Serialize::sendStruct(ret, sock, clientNum);        
         return;

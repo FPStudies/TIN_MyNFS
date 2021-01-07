@@ -232,14 +232,13 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 
 	if (dir == NULL)
 	{
-        logInfo("after open");
         error_ = Error::Type::ebadf;
         logEndCustom(error_);
 		return NULL;
 	}
 
 	struct dirent * de;
-	std::string str;
+	std::string str = "";
 
 	while ((de = readdir(dir)) != NULL)
 	{
@@ -255,7 +254,6 @@ char* API::mynsf_readdir(int dirfd, FDManager& manager)
 	{
 		// pusty katalog
         logEndCustom("Pass. Empty string.");
-		return NULL;
 	}
 
 	str = str.substr(0, str.size() - 1);

@@ -102,7 +102,7 @@ void Server::run()
     createConnectSocket();
     bindPort();
 
-    mkdir("server", 0777);
+    mkdir("server", S_IRWXU |  S_IRWXG | S_IRWXO);
 
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = INADDR_ANY;
