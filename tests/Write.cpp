@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_write test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
     char buf[21] = "TesT";
 
     SECTION("Parameter error")
@@ -34,6 +34,7 @@ TEST_CASE ("MyNFS_write test.") {
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == -1);
         REQUIRE(api.getError().get() == Error::Type::eisdir);
+        //api.mynfs_closedir(fd, manager);
     }
 
     SECTION("Writing read-only file")

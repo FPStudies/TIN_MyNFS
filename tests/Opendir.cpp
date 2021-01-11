@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_opendir test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     //creates new directory instead of error
     /*

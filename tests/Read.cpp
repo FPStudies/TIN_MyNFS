@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_read test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
     char buf[21] = "";
 
     SECTION("Parameter error")

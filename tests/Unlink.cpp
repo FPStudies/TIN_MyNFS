@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_unlink test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     SECTION("Unlinking nonexistent file")
     {

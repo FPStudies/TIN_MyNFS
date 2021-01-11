@@ -21,8 +21,8 @@ void ClientHandler::run()
     bool run = true;
     int readFlag;
     ApiIDS id;
-    FDManager fdManager;
     IDGen idGen;
+    FDManager fdManager;
     logInfo("Polaczono klienta nr " + std::to_string(clientNum) + ". Socket " + std::to_string(sock));
     while(run)
     {

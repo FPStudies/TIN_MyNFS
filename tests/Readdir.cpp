@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_readdir test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     SECTION("Parameter error")
     {
@@ -12,6 +12,7 @@ TEST_CASE ("MyNFS_readdir test.") {
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == NULL);
         REQUIRE(api.getError().get() == Error::Type::ebadf);
+        delete[] ret;
     }
 
     SECTION("Reading nonexistent directory")
@@ -20,6 +21,7 @@ TEST_CASE ("MyNFS_readdir test.") {
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == NULL);
         REQUIRE(api.getError().get() == Error::Type::ebadf);
+        delete[] ret;
     }
 
     SECTION("Reading file")
@@ -29,6 +31,7 @@ TEST_CASE ("MyNFS_readdir test.") {
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(ret == NULL);
         REQUIRE(api.getError().get() == Error::Type::ebadf);
+        delete[] ret;
     }
 
     SECTION("Empty directory")
@@ -37,6 +40,7 @@ TEST_CASE ("MyNFS_readdir test.") {
         char* ret = api.mynsf_readdir(fd, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE((strcmp(ret, "")) == 0);
+        delete[] ret;
     }
 
     SECTION("Reading directory")
@@ -46,5 +50,6 @@ TEST_CASE ("MyNFS_readdir test.") {
         char* ret = api.mynsf_readdir(fd, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
         REQUIRE(!strcmp(ret, "'test.txt'"));
+        delete[] ret;
     }
 }

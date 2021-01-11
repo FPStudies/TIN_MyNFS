@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_close test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     SECTION("Closing nonexistent file")
     {

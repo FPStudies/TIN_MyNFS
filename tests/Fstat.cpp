@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_fstat test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     SECTION("Stating nonexistent file")
     {

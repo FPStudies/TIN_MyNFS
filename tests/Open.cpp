@@ -4,8 +4,8 @@
 TEST_CASE ("MyNFS_open test.") 
 {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     //never happens; O_RDONLY == 0 so it's the "default"
     /*

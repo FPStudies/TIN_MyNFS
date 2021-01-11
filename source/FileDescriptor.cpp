@@ -38,7 +38,8 @@ FileDescriptor::operator std::string() const{
 
 FileDescriptor::~FileDescriptor(){
     logStart();
-    generator_.dispose(fdID_);
+    generator_.dispose(fdID_); //DANGEROUS - requires the generator to still exist when invoked; remember to destroy FDManager before IDGen
+    
     if(dir == NULL || dir == nullptr){
         if(fdOS_ < 0) return;
         
@@ -46,7 +47,7 @@ FileDescriptor::~FileDescriptor(){
             errno = 0;
         }
         else{
-            close(fdOS_);
+            close(fdOS_); //TODO: check errors?
         }
     }
     else{
@@ -54,6 +55,7 @@ FileDescriptor::~FileDescriptor(){
             errno = 0;
         }
     }
+    
     logEnd();
 }
 

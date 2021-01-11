@@ -3,8 +3,8 @@
 
 TEST_CASE ("MyNFS_closedir test.") {
     API api;
-    FDManager manager;
     IDGen generator;
+    FDManager manager;
 
     SECTION("Parameter error")
     {
@@ -26,9 +26,9 @@ TEST_CASE ("MyNFS_closedir test.") {
     {
         int fd = api.mynfs_opendir("/tests", manager, generator);
         REQUIRE(fd >= 0);
-        //int ret = api.mynfs_closedir(fd, manager);
+        int ret = api.mynfs_closedir(fd, manager);
         //std::cout<< Error::toString(api.getError().get()) << std::endl;
-        //REQUIRE(ret != -1);
-        //REQUIRE(!manager.exist(fd));
+        REQUIRE(ret != -1);
+        REQUIRE(!manager.exist(fd));
     }
 }
