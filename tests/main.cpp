@@ -3,7 +3,7 @@
 #include <vector>
 #include "clientapi.h"
 
-/*
+
 TEST_CASE("many connections", "[connections]")
 {
     int n = 100;
@@ -16,7 +16,7 @@ TEST_CASE("many connections", "[connections]")
    }
     REQUIRE(true);
 }
-*/
+
 
 TEST_CASE("write and fstat tests", "[write_fstat]")
 {

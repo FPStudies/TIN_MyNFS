@@ -23,13 +23,13 @@ int main(){
 
         api.mynfs_lseek(fd, SEEK_END, 0);
 
-        api.mynfs_write(fd, mes, strlen(mes) + 1);
+        api.mynfs_write(fd, mes, strlen(mes)+1);
         std::cout<<"\nafter nfs write\n";
 
         auto res = api.mynfs_fstat(fd);
         std::cout<<"\nafter nfs fstat\n";
 
-        std::cout<<res.nfs_st_size;
+        std::cout<<res.nfs_st_size<<std::endl;
         // api.mynfs_lseek(fd, SEEK_END, 0);
         std::cout<<"\nafter nfs fstat\n";
 
@@ -39,20 +39,20 @@ int main(){
         res = api.mynfs_fstat(fd);
         std::cout<<"\nafter nfs fstat\n";
 
-        std::cout<<res.nfs_st_size;
+        std::cout<<res.nfs_st_size<<std::endl;
 
         char* rs = new char[1000]();
 
         api.mynfs_lseek(fd, SEEK_SET, 0);
         api.mynfs_read(fd, rs, (i+1)*7);
-        std::cout<<rs;
+        std::cout<<rs<<std::endl;
         api.mynfs_close(fd);
         std::cout<<"\nafter nfs close\n";
         delete[] rs;
         rs = NULL;
         auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
         rs = api.mynfs_readdir(dfd);
-        if(rs != NULL) if(strlen(rs) > 0) std::cout<<rs;
+        if(rs != NULL) if(strlen(rs) > 0) std::cout<<rs<<std::endl;
         api.mynfs_closedir(dfd);
         delete[] rs;
 

@@ -12,6 +12,7 @@ INCLUDE_ALL = $(INCLUDE) $(SPDLOG_INCLUDE)
 
 OUT_NAME = ../Program
 OUT_LIB_NAME = libsource.a
+LIBFILE = libsource.a
 
 OBJECT_FILES = $(patsubst %.cpp, %.o, $(SOURCE))
 OBJECT_FILES_NO_MAIN = $(filter-out main.o, $(OBJECT_FILES))
@@ -28,4 +29,4 @@ library: $(OBJECT_FILES_NO_MAIN)
 	ar rcs $(OUT_LIB_NAME) $^
 
 clean: 
-	rm -f $(BINARIES) $(OUT_NAME)
+	rm -f $(BINARIES) $(OUT_NAME) $(LIBFILE)
