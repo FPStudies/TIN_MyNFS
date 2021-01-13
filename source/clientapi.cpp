@@ -202,6 +202,10 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
 
     if (recData.errorID == 0)
     {
+        RecDataOneLine recOk;
+        recOk.fileDescriptor = mynfs_fd;
+        recOk.operID = static_cast<char>(ApiIDS::READ);
+        Serialize::sendStruct(recOk, *client);
         Deserialize recString(len); // TODO sprawdzić czy dla dużych wartości działa
         logCustom("Waiting to receive string");
         recString.receiveData(*client);
