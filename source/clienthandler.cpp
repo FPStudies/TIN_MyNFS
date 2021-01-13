@@ -185,7 +185,8 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
         delete[] buf;
         return;
     }
-
+    RecDataOneLine recOk;
+    Deserialize::receiveStruct(recOk, sock, clientNum);
     Serialize retString(ret.retVal);
     retString.serializeString(buf, ret.retVal);
     logSendStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
