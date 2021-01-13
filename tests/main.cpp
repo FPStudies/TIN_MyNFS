@@ -10,7 +10,7 @@ TEST_CASE("many connections", "[connections]")
    for(int i = 0; i < n; ++i)
    {
         ClientApi api;
-        int fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); 
+        int fd = api.mynfs_open("78.88.237.18", "/file.txt", O_RDWR | O_CREAT, 0660); 
         REQUIRE(fd >= 0);
         api.mynfs_close(fd);
    }
@@ -21,7 +21,7 @@ TEST_CASE("many connections", "[connections]")
 TEST_CASE("write and fstat tests", "[write_fstat]")
 {
     ClientApi api;
-    int fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); 
+    int fd = api.mynfs_open("78.88.237.18", "/file.txt", O_RDWR | O_CREAT, 0660); 
     auto res = api.mynfs_fstat(fd);
     int initSize = res.nfs_st_size;
 
@@ -40,10 +40,10 @@ TEST_CASE("write and fstat tests", "[write_fstat]")
 TEST_CASE("ReadDir tests", "[ReadDir]")
 {
     ClientApi api;
-    int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
+    int dirFD = api.mynfs_opendir("78.88.237.18", "/TestCase3_DIR");
     REQUIRE(dirFD >= 0);
 
-    int fd = api.mynfs_open("127.0.0.1", "/TestCase3_DIR/testcase3.txt", O_RDWR | O_CREAT, 0660);
+    int fd = api.mynfs_open("78.88.237.18", "/TestCase3_DIR/testcase3.txt", O_RDWR | O_CREAT, 0660);
     REQUIRE(fd >= 0);
     api.mynfs_close(fd);
 
@@ -59,10 +59,10 @@ TEST_CASE("ReadDir tests", "[ReadDir]")
 TEST_CASE("Unlink tests", "[unlink]")
 {
     ClientApi api;
-    int retVal = api.mynfs_unlink("127.0.0.1", "/TestCase3_DIR/testcase3.txt");
+    int retVal = api.mynfs_unlink("78.88.237.18", "/TestCase3_DIR/testcase3.txt");
     REQUIRE(retVal == 0);
    
-    int dirFD = api.mynfs_opendir("127.0.0.1", "/TestCase3_DIR");
+    int dirFD = api.mynfs_opendir("78.88.237.18", "/TestCase3_DIR");
     REQUIRE(dirFD >= 0);
 
     char * returnDir = api.mynfs_readdir(dirFD);
@@ -76,7 +76,7 @@ TEST_CASE("Unlink tests", "[unlink]")
 TEST_CASE("Read and lseek tests", "[read_lseek]")
 {
     ClientApi api;
-    int fd = api.mynfs_open("127.0.0.1", "/testCase2.txt", O_RDWR | O_CREAT, 0660);
+    int fd = api.mynfs_open("78.88.237.18", "/testCase2.txt", O_RDWR | O_CREAT, 0660);
     REQUIRE(fd >= 0);
 
     char * toWrite = "TestCase2LseekTest_SPACE_Seek_EndTest____END";

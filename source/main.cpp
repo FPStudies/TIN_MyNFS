@@ -15,10 +15,10 @@ int main(){
     spdlog::set_level(spdlog::level::debug);
     #endif
 
-    for(int i = 0; i < 10; ++i) {
+    // for(int i = 0; i < 10; ++i) {
         ClientApi api;
-        auto fd = api.mynfs_open("127.0.0.1", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
-        char* mes = "Siemka";
+        auto fd = api.mynfs_open("78.88.237.18", "/file.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
+        char* mes = "vjik";
         std::cout<<"\nafter nfs open\n";
 
         api.mynfs_lseek(fd, SEEK_END, 0);
@@ -44,19 +44,17 @@ int main(){
         char* rs = new char[1000]();
 
         api.mynfs_lseek(fd, SEEK_SET, 0);
-        api.mynfs_read(fd, rs, (i+1)*7);
+        api.mynfs_read(fd, rs, 7);
         std::cout<<rs<<std::endl;
         api.mynfs_close(fd);
         std::cout<<"\nafter nfs close\n";
-        delete[] rs;
-        rs = NULL;
-        auto dfd = api.mynfs_opendir("127.0.0.1", "/source");
+        auto dfd = api.mynfs_opendir("78.88.237.18", "/source");
         rs = api.mynfs_readdir(dfd);
         if(rs != NULL) if(strlen(rs) > 0) std::cout<<rs<<std::endl;
         api.mynfs_closedir(dfd);
         delete[] rs;
 
-    }
+   // }
 
 
     
