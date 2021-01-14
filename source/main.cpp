@@ -14,11 +14,14 @@ int main(){
     spdlog::info("Welcome to spdlog!");
     auto logger = spdlog::basic_logger_mt("basic_logger", "logs/basic-log.txt");
     spdlog::set_level(spdlog::level::debug);
+
+    spdlog::flush_on(spdlog::level::info);  // 
+    spdlog::flush_on(spdlog::level::debug);  // aby podczas ctrl ^ c zapisało logi do plików. 
     #endif
     ClientApi api;
-    int img_size = 49314;
+    int img_size = 9860;
     int sleep_time = 1000000;
-    auto fd = api.mynfs_open("127.0.0.1", "/test_img.jpg", O_RDONLY, 0660); // hardcoded for now
+    auto fd = api.mynfs_open("127.0.0.1", "/kwiat.jpeg", O_RDONLY, 0660); // hardcoded for now
     //api.mynfs_lseek(fd, SEEK_SET, 0);
     char* img = new char[img_size]();
     api.mynfs_read(fd, img, img_size);

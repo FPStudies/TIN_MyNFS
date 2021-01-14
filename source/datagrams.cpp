@@ -129,21 +129,26 @@ const char * const Datagram::getBuffer() const{
     return buffer;
 }
 
-ssize_t Deserialize::receiveData(const Client& client){
-    ssize_t readFlag;
-    
-    if ((readFlag = read(client.getSocket(), buffer, bufSize)) == -1)
-    {
-        logCustom("Nie udalo sie odebrac.");
-        return -1;
+ssize_t Deserialize::receiveData(const Client& client, size_t size){
+    ssize_t sum = 0;
+    ssize_t readFlag = -1;
+    while(sum < size){
+        std::cout << "b read" + std::to_string(readFlag) + " " + std::to_string(pos) + " " +  std::to_string(bufSize) << std::endl;
+        readFlag = read(client.getSocket(), buffer + pos, bufSize);
+        std::cout << "a read" << std::endl;
+        if(readFlag < 0){
+            logCustom("Nie udalo sie odebrac.");
+            return -1;
+        }
+        if(readFlag == 0){
+            return sum;
+        }
+        pos += readFlag;
+        sum += readFlag;
     }
-    else if (readFlag == 0)
-    {
-        logCustom("Koniec polaczenia z klientem ");
-        return 0;
-    }
-    
-    return readFlag;
+    pos = 0;
+
+    return sum;
 }
 
 ssize_t Serialize::sendData(const Client& client)

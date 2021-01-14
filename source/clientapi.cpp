@@ -192,7 +192,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
     logCustom("Waiting to receive struct");
     Deserialize::receiveStruct(recData, *client);
     logReceiveStructMessage(recData, "");
-    if(recData.retVal < 0)
+    if(recData.retVal <= 0)
     {
         logError("did not receive data");
         setErrno((int)MyNFS_ERRORS::eserv);
@@ -208,7 +208,7 @@ int ClientApi::mynfs_read(int mynfs_fd, char * buf, int len)
         Serialize::sendStruct(recOk, *client);
         Deserialize recString(len); // TODO sprawdzić czy dla dużych wartości działa
         logCustom("Waiting to receive string");
-        recString.receiveData(*client);
+        recString.receiveData(*client, len);
         recString.deserializeString(buf, recData.retVal);
         logReceiveStringMessage(std::string(buf), "");
         logEndCustom("Pass");
@@ -524,7 +524,7 @@ char * ClientApi::mynfs_readdir(int dirfd)
     
         Deserialize recStr(recData.retVal);
         logCustom("Waiting to receive string");
-        recStr.receiveData(*client);
+        recStr.receiveData(*client, recData.retVal);
         
         char * dirString = new char[recData.retVal]();
         logReceiveStringMessage(std::string(dirString), "");

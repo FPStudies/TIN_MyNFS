@@ -180,7 +180,7 @@ public:
 
     static bool badLength(int length);
 
-    ssize_t receiveData(const Client& client);
+    ssize_t receiveData(const Client& client, size_t size);
 };
 
 class Serialize: public Datagram
