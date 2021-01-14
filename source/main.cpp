@@ -18,6 +18,7 @@ int main(){
     spdlog::flush_on(spdlog::level::info);  // 
     spdlog::flush_on(spdlog::level::debug);  // aby podczas ctrl ^ c zapisało logi do plików. 
     #endif
+
     ClientApi api;
     int img_size = 9860;
     int sleep_time = 1000000;
