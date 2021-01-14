@@ -133,9 +133,7 @@ ssize_t Deserialize::receiveData(const Client& client, size_t size){
     ssize_t sum = 0;
     ssize_t readFlag = -1;
     while(sum < size){
-        std::cout << "b read" + std::to_string(readFlag) + " " + std::to_string(pos) + " " +  std::to_string(bufSize) << std::endl;
         readFlag = read(client.getSocket(), buffer + pos, bufSize);
-        std::cout << "a read" << std::endl;
         if(readFlag < 0){
             logCustom("Nie udalo sie odebrac.");
             return -1;
