@@ -178,7 +178,7 @@ public:
 
     static bool badLength(int length);
 
-    ssize_t receiveData(const int socket, const int clientNumber);
+    ssize_t receiveData(const int socket, const int clientNumber, size_t size);
 };
 
 class Serialize: public Datagram

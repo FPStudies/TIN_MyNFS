@@ -26,8 +26,8 @@ void ClientHandler::run()
     logInfo("Polaczono klienta nr " + std::to_string(clientNum) + ". Socket " + std::to_string(sock));
     while(run)
     {
-        Deserialize data(16);
-        readFlag = data.receiveData(sock, clientNum);
+        Deserialize data(256);
+        readFlag = data.receiveData(sock, clientNum, 256);
         if (readFlag <= 0)
             run = false;
         else
@@ -106,8 +106,8 @@ void ClientHandler::openFile(Deserialize& data, FDManager& manager, IDGen& gen)
         Serialize::sendStruct(ret, sock, clientNum);
         logCustom("Send struct");
     }
-    Deserialize retString(received.pathLength);
-    retString.receiveData(sock, clientNum);
+    Deserialize retString(received.pathLength + 1024);
+    if(retString.receiveData(sock, clientNum, received.pathLength) != received.pathLength) throw std::runtime_error("Dlugosc1");
     logCustom("The pah length is: " + std::to_string(received.pathLength));
     char* path = new char[received.pathLength];
     retString.deserializeString(path, received.pathLength);
@@ -151,7 +151,7 @@ void ClientHandler::openDir(Deserialize& data, FDManager& manager, IDGen& gen)
     
     
     Deserialize retString(received.length);
-    retString.receiveData(sock, clientNum);
+    if(retString.receiveData(sock, clientNum, received.length) != received.length) throw std::runtime_error("Dlugosc2");
     char* path = new char[received.length];
     retString.deserializeString(path, received.length);
     logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
@@ -228,8 +228,9 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
         logCustom("Send struct");
     }
 
-    Deserialize retString(rec.length);
-    retString.receiveData(sock, clientNum);
+    Deserialize retString(rec.length + 256);
+    int err_a;
+    if((err_a = retString.receiveData(sock, clientNum, rec.length)) != rec.length) throw std::runtime_error(std::to_string(err_a));
 
     char* toWrite = new char[rec.length];
     retString.deserializeString(toWrite, rec.length);
@@ -238,7 +239,14 @@ void ClientHandler::writeFile(Deserialize& data, FDManager& manager)
     ret.errorID = api.getError();
     ret.operID = static_cast<char>(ApiIDS::WRITE);
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+    /*
+    //clear socket
+    char buf_tmp[16];
+    while ((recv(sock, buf_tmp, 16, 0)) > 0);
+    */
     Serialize::sendStruct(ret, sock, clientNum);
+
+    
 
     logEndCustom("Pass");
     delete[] toWrite;
@@ -307,7 +315,7 @@ void ClientHandler::unlink(Deserialize& data, FDManager& manager)
     
     
     Deserialize retString(received.length);
-    retString.receiveData(sock, clientNum);
+    if(retString.receiveData(sock, clientNum, received.length) != received.length) throw std::runtime_error("Dlugosc4");
     char* path = new char[received.length];
     retString.deserializeString(path, received.length);
     logReceiveStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));

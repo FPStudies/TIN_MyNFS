@@ -70,6 +70,7 @@ void *clientThread(void *arg)
 
     handler.run();
 
+    //usleep(1000);
 	close(threadStruct->sock);
     #ifdef ENABLE_LOGS
     logger->info("Zamknieto socket " + std::to_string(threadStruct->sock) + " Thread ID: " + std::to_string(threadStruct->threadID));
