@@ -22,8 +22,8 @@ int main(){
 
 //78.88.237.18
 //127.0.0.1
-/*
-    for(int i = 0; i < 100; ++i) {
+
+    for(int i = 0; i < 10; ++i) {
         ClientApi api;
         auto fd = api.mynfs_open("78.88.237.18", "/file_fp.txt", O_RDWR | O_CREAT, 0660); // hardcoded for now
         char* mes = "\\TesT/";
@@ -68,7 +68,7 @@ int main(){
         
 
     }
-*/
+
     //int img_size = 1000;
     //int sleep_time = 1000000;
 
