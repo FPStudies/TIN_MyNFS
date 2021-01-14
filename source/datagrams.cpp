@@ -134,9 +134,7 @@ ssize_t Deserialize::receiveData(const int socket, const int clientNumber, size_
     ssize_t readFlag = -1;
     
     while(sum < size){
-        std::cout << "b read" + std::to_string(readFlag) + " " + std::to_string(pos) + " " +  std::to_string(bufSize) << std::endl;
         readFlag = read(socket, buffer + pos, bufSize);
-        std::cout << "a read"  + std::to_string(readFlag) << std::endl;
         if(readFlag < 0){
             logInfo("Nie udalo sie odebrac. (" + std::to_string(clientNumber) + ")");
             return -1;
@@ -163,7 +161,6 @@ ssize_t Serialize::sendData(const int socket, const int clientNumber)
     }
     else
     {
-        std::cout << "send" << std::endl;
         logInfo("Wyslano wiadomosc (" + std::to_string(clientNumber) + ")");
     }
     return writeFlag;
