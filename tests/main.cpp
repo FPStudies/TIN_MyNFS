@@ -3,7 +3,7 @@
 #include <vector>
 #include "clientapi.h"
 
-char* IP = "127.0.0.1";
+char* IP = "78.88.237.18";
 
 TEST_CASE("many connections", "[connections]")
 {

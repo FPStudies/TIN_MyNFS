@@ -340,7 +340,7 @@ int ClientApi::mynfs_close(int mynfs_fd)
     //std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
 
     logEndCustom("Pass");
-    usleep(10000);
+    //usleep(10000);
 
     return recData.retVal;
 }
@@ -479,7 +479,7 @@ int ClientApi::mynfs_closedir(int dirfd)
         setErrno(recData.errorID);
     }
     std::cout << "Zwrocono ret: " << recData.retVal << ", error: " << static_cast<int>(recData.errorID) << std::endl;
-    usleep(10000);
+    //usleep(10000);
 
     return recData.retVal; 
 }
