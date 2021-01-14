@@ -48,6 +48,7 @@ ClientApi::~ClientApi()
     //clean *Clients
     for (auto const& it : clients)
     {
+        //close(it.second->getSocket());
         delete it.second;
     }
 }
