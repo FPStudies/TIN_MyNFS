@@ -129,21 +129,27 @@ const char * const Datagram::getBuffer() const{
     return buffer;
 }
 
-ssize_t Deserialize::receiveData(const int socket, const int clientNumber){
-    ssize_t readFlag;
+ssize_t Deserialize::receiveData(const int socket, const int clientNumber, size_t size){
+    ssize_t sum = 0;
+    ssize_t readFlag = -1;
     
-    if ((readFlag = read(socket, buffer, bufSize)) == -1)
-    {
-        logInfo("Nie udalo sie odebrac. (" + std::to_string(clientNumber) + ")");
-        return -1;
+    while(sum < size){
+        std::cout << "b read" + std::to_string(readFlag) + " " + std::to_string(pos) + " " +  std::to_string(bufSize) << std::endl;
+        readFlag = read(socket, buffer + pos, bufSize);
+        std::cout << "a read"  + std::to_string(readFlag) << std::endl;
+        if(readFlag < 0){
+            logInfo("Nie udalo sie odebrac. (" + std::to_string(clientNumber) + ")");
+            return -1;
+        }
+        if(readFlag == 0){
+            return sum;
+        }
+
+        pos += readFlag;
+        sum += readFlag;
     }
-    else if (readFlag == 0)
-    {
-        logInfo("Koniec polaczenia z klientem (" + std::to_string(clientNumber) + ")");
-        return 0;
-    }
-    
-    return readFlag;
+    pos = 0;
+    return sum;
 }
 
 ssize_t Serialize::sendData(const int socket, const int clientNumber)
@@ -157,6 +163,7 @@ ssize_t Serialize::sendData(const int socket, const int clientNumber)
     }
     else
     {
+        std::cout << "send" << std::endl;
         logInfo("Wyslano wiadomosc (" + std::to_string(clientNumber) + ")");
     }
     return writeFlag;

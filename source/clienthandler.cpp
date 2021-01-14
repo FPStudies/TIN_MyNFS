@@ -27,7 +27,7 @@ void ClientHandler::run()
     while(run)
     {
         Deserialize data(256);
-        readFlag = data.receiveData(sock, clientNum, 256);
+        readFlag = data.receiveData(sock, clientNum, 1);
         if (readFlag <= 0)
             run = false;
         else
@@ -180,13 +180,16 @@ void ClientHandler::readFile(Deserialize& data, FDManager& manager)
     ret.operID = static_cast<char>(ApiIDS::READ);
     logSendStructMessage(ret, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
     Serialize::sendStruct(ret, sock, clientNum); 
+    RecDataOneLine recOk;
 
-    if(ret.retVal == -1) {
+    if(ret.retVal <= 0) {
         delete[] buf;
         return;
     }
-    RecDataOneLine recOk;
+
     Deserialize::receiveStruct(recOk, sock, clientNum);
+    logReceiveStructMessage(recOk, "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
+
     Serialize retString(ret.retVal);
     retString.serializeString(buf, ret.retVal);
     logSendStringMessage(retString.getBuffer(), "\nSocket:\t" + std::to_string(sock) + "\nClientNumber:\t" + std::to_string(clientNum));
